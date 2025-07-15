@@ -178,4 +178,251 @@ router.post('/pets/:id/adopt', [
     }
 });
 
+/**
+ * @swagger
+ * /pets/{id}/alimentar:
+ *   post:
+ *     summary: Alimenta a la mascota
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cantidad:
+ *                 type: integer
+ *                 description: Cantidad de comida (opcional)
+ *     responses:
+ *       200:
+ *         description: Mascota alimentada
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/alimentar', async (req, res) => {
+    try {
+        const cantidad = req.body.cantidad || 20;
+        const pet = await petService.alimentarPet(req.params.id, cantidad);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/banar:
+ *   post:
+ *     summary: Baña a la mascota
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     responses:
+ *       200:
+ *         description: Mascota bañada
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/banar', async (req, res) => {
+    try {
+        const pet = await petService.banarPet(req.params.id);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/pasear:
+ *   post:
+ *     summary: Saca a pasear a la mascota
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     responses:
+ *       200:
+ *         description: Mascota paseada
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/pasear', async (req, res) => {
+    try {
+        const pet = await petService.pasearPet(req.params.id);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/equipar-ropa:
+ *   post:
+ *     summary: Equipa ropa a la mascota
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               tipo:
+ *                 type: string
+ *                 description: gratis o paga
+ *     responses:
+ *       200:
+ *         description: Ropa equipada
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/equipar-ropa', async (req, res) => {
+    try {
+        const pet = await petService.equiparRopaPet(req.params.id, req.body);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/curar:
+ *   post:
+ *     summary: Cura a la mascota si está enferma
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     responses:
+ *       200:
+ *         description: Mascota curada
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/curar', async (req, res) => {
+    try {
+        const pet = await petService.curarPet(req.params.id);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/pocion-salud:
+ *   post:
+ *     summary: Usa una poción para restaurar la salud de la mascota al 100 y curarla si está enferma
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     responses:
+ *       200:
+ *         description: Mascota restaurada con salud al 100
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/pocion-salud', async (req, res) => {
+    try {
+        const pet = await petService.usarPocionSaludPet(req.params.id);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/revivir:
+ *   post:
+ *     summary: Revive a la mascota si está muerta, restaurando sus estadísticas principales
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     responses:
+ *       200:
+ *         description: Mascota revivida
+ *       400:
+ *         description: Error
+ */
+router.post('/pets/:id/revivir', async (req, res) => {
+    try {
+        const pet = await petService.revivirPet(req.params.id);
+        res.json(pet);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /pets/{id}/estado:
+ *   get:
+ *     summary: Consulta el estado dinámico de la mascota
+ *     tags: [Mascotas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la mascota
+ *     responses:
+ *       200:
+ *         description: Estado de la mascota
+ *       404:
+ *         description: Mascota no encontrada
+ */
+router.get('/pets/:id/estado', async (req, res) => {
+    try {
+        const pet = await petService.getPetById(req.params.id);
+        res.json(pet);
+    } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+});
+
 export default router; 

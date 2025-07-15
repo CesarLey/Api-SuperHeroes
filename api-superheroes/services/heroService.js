@@ -1,4 +1,5 @@
 import heroRepository from '../repositories/heroRepository.js'
+import petService from './petService.js'
 
 async function getAllHeroes() {
     return await heroRepository.getHeroes()
@@ -62,11 +63,33 @@ async function faceVillain(heroId, villain) {
     return `${hero.alias} enfrenta a ${villain}`;
 }
 
+async function getHeroesWithAdoptedPets() {
+    const heroes = await heroRepository.getHeroes();
+    const pets = await petService.getAllPets();
+    // Solo héroes que tengan mascota adoptada
+    const result = heroes.map(hero => {
+        const pet = pets.find(p => p.adoptedBy === hero.id);
+        if (pet) {
+            return {
+                id: hero.id,
+                name: hero.name,
+                alias: hero.alias,
+                city: hero.city,
+                team: hero.team,
+                mascota: pet
+            };
+        }
+        return null;
+    }).filter(h => h !== null);
+    return result;
+}
+
 export default {
     getAllHeroes,
     addHero,
     updateHero,
     deleteHero,
     findHeroesByCity,
-    faceVillain
+    faceVillain,
+    getHeroesWithAdoptedPets
 } 

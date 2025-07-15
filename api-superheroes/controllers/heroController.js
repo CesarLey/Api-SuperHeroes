@@ -346,4 +346,23 @@ router.get('/heroes/:id/mascotas-adoptadas', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /heroes/with-pet:
+ *   get:
+ *     summary: Lista todos los héroes con su respectiva mascota adoptada y sus estadísticas
+ *     tags: [Héroes]
+ *     responses:
+ *       200:
+ *         description: Lista de héroes con mascota adoptada y estadísticas
+ */
+router.get('/heroes/with-pet', async (req, res) => {
+    try {
+        const result = await heroService.getHeroesWithAdoptedPets();
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router 
