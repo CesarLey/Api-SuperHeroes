@@ -4,6 +4,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,9 +13,9 @@
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
-    "fs-extra": "^11.3.0",
     "express-validator": "^7.0.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^4.7.2"
+    "swagger-ui-express": "^5.0.1",
+    "mongoose": "^8.3.5"
   }
 }

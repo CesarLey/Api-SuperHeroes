@@ -3,6 +3,7 @@ import heroController from './controllers/heroController.js'
 import petController from './controllers/petController.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import mongoose from 'mongoose';
 
 const options = {
   definition: {
@@ -22,6 +23,10 @@ const options = {
 };
 
 const swaggerSpec = swaggerJSDoc(options);
+
+mongoose.connect('mongodb+srv://cesarley15:qWyMmxTAZJ1U7fPD@cluster0.asaxiov.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+  .then(() => console.log('Conectado a MongoDB Atlas'))
+  .catch(err => console.error('Error al conectar a MongoDB Atlas:', err));
 
 const app = express()
 

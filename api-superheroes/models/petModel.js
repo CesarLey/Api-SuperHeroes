@@ -1,18 +1,20 @@
-class Pet {
-    constructor(id, name, type, adoptedBy = null, salud = 100, felicidad = 100, hambre = 50, limpieza = 100, ropa = [], enfermo = false, ultimoEstado = null, muerta = false) {
-        this.id = id;
-        this.name = name;
-        this.type = type;
-        this.adoptedBy = adoptedBy; // id del superhéroe que la adoptó, o null
-        this.salud = salud;
-        this.felicidad = felicidad;
-        this.hambre = hambre;
-        this.limpieza = limpieza;
-        this.ropa = ropa; // array de objetos {nombre, tipo}
-        this.enfermo = enfermo;
-        this.ultimoEstado = ultimoEstado || new Date().toISOString();
-        this.muerta = muerta;
-    }
-}
+import mongoose from 'mongoose';
+
+const petSchema = new mongoose.Schema({
+  id: { type: Number, required: true, unique: true },
+  name: { type: String, required: true },
+  type: { type: String, required: true },
+  adoptedBy: { type: Number, default: null },
+  salud: { type: Number, default: 100 },
+  felicidad: { type: Number, default: 100 },
+  hambre: { type: Number, default: 50 },
+  limpieza: { type: Number, default: 100 },
+  ropa: { type: [Object], default: [] },
+  enfermo: { type: Boolean, default: false },
+  ultimoEstado: { type: String, default: () => new Date().toISOString() },
+  muerta: { type: Boolean, default: false }
+});
+
+const Pet = mongoose.model('Pet', petSchema);
 
 export default Pet; 

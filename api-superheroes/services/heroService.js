@@ -1,62 +1,46 @@
-import heroRepository from '../repositories/heroRepository.js'
-import petService from './petService.js'
+import Hero from '../models/heroModel.js';
+import petService from './petService.js';
 
 async function getAllHeroes() {
-    return await heroRepository.getHeroes()
+    return await Hero.find();
 }
 
 async function addHero(hero) {
     if (!hero.name || !hero.alias) {
         throw new Error("El héroe debe tener un nombre y un alias.");
     }
-
-    const heroes = await heroRepository.getHeroes();
-
-    const newId = heroes.length > 0 ? Math.max(...heroes.map(h => h.id)) + 1 : 1;
-    const newHero = { ...hero, id: newId };
-
-    heroes.push(newHero);
-    await heroRepository.saveHeroes(heroes);
-
+    // Generar un nuevo id único
+    const lastHero = await Hero.findOne().sort({ id: -1 });
+    const newId = lastHero ? lastHero.id + 1 : 1;
+    const newHero = new Hero({ ...hero, id: newId });
+    await newHero.save();
     return newHero;
 }
 
 async function updateHero(id, updatedHero) {
-    const heroes = await heroRepository.getHeroes();
-    const index = heroes.findIndex(hero => hero.id === parseInt(id));
-
-    if (index === -1) {
+    const hero = await Hero.findOne({ id: parseInt(id) });
+    if (!hero) {
         throw new Error('Héroe no encontrado');
     }
-
-    delete updatedHero.id;
-    heroes[index] = { ...heroes[index], ...updatedHero };
-
-    await heroRepository.saveHeroes(heroes);
-    return heroes[index];
+    Object.assign(hero, updatedHero);
+    await hero.save();
+    return hero;
 }
 
 async function deleteHero(id) {
-    const heroes = await heroRepository.getHeroes();
-    const index = heroes.findIndex(hero => hero.id === parseInt(id));
-
-    if (index === -1) {
+    const result = await Hero.deleteOne({ id: parseInt(id) });
+    if (result.deletedCount === 0) {
         throw new Error('Héroe no encontrado');
     }
-
-    const filteredHeroes = heroes.filter(hero => hero.id !== parseInt(id));
-    await heroRepository.saveHeroes(filteredHeroes);
     return { message: 'Héroe eliminado' };
 }
 
 async function findHeroesByCity(city) {
-    const heroes = await heroRepository.getHeroes();
-    return heroes.filter(hero => hero.city && hero.city.toLowerCase() === city.toLowerCase());
+    return await Hero.find({ city: { $regex: new RegExp(`^${city}$`, 'i') } });
 }
 
 async function faceVillain(heroId, villain) {
-    const heroes = await heroRepository.getHeroes();
-    const hero = heroes.find(hero => hero.id === parseInt(heroId));
+    const hero = await Hero.findOne({ id: parseInt(heroId) });
     if (!hero) {
         throw new Error('Héroe no encontrado');
     }
@@ -64,7 +48,7 @@ async function faceVillain(heroId, villain) {
 }
 
 async function getHeroesWithAdoptedPets() {
-    const heroes = await heroRepository.getHeroes();
+    const heroes = await Hero.find();
     const pets = await petService.getAllPets();
     // Solo héroes que tengan mascota adoptada
     const result = heroes.map(hero => {
@@ -92,4 +76,4 @@ export default {
     findHeroesByCity,
     faceVillain,
     getHeroesWithAdoptedPets
-} 
+}; 

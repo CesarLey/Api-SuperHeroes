@@ -1,0 +1,23 @@
+{
+  "name": "superheroes",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CesarLey/Api-SuperHeroes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CesarLey/Api-SuperHeroes/issues"
+  },
+  "homepage": "https://github.com/CesarLey/Api-SuperHeroes#readme",
+  "description": "",
+  "dependencies": {
+    "mongoose": "^8.16.3"
+  }
+}
