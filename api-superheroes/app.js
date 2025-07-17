@@ -5,6 +5,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
+import cors from 'cors';
 
 const options = {
   definition: {
@@ -53,7 +54,7 @@ mongoose.connect('mongodb+srv://cesarley15:qWyMmxTAZJ1U7fPD@cluster0.asaxiov.mon
   .catch(err => console.error('Error al conectar a MongoDB Atlas:', err));
 
 const app = express()
-
+app.use(cors());
 app.use(express.json())
 app.use('/api/auth', authRoutes);
 app.use('/api', heroController)
