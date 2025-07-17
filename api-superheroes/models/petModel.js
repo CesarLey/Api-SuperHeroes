@@ -12,7 +12,8 @@ const petSchema = new mongoose.Schema({
   ropa: { type: [Object], default: [] },
   enfermo: { type: Boolean, default: false },
   ultimoEstado: { type: String, default: () => new Date().toISOString() },
-  muerta: { type: Boolean, default: false }
+  muerta: { type: Boolean, default: false },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
 const Pet = mongoose.model('Pet', petSchema);

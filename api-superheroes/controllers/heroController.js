@@ -3,22 +3,30 @@ import { check, validationResult } from 'express-validator';
 import heroService from "../services/heroService.js";
 import petService from "../services/petService.js";
 import Hero from "../models/heroModel.js";
+import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Aplicar middleware de autenticación a todas las rutas
+router.use(authMiddleware);
 
 /**
  * @swagger
  * /heroes:
  *   get:
- *     summary: Obtiene todos los héroes
+ *     summary: Obtiene todos los héroes del usuario autenticado
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de héroes
+ *         description: Lista de héroes del usuario
+ *       401:
+ *         description: No autorizado
  */
 router.get("/heroes", async (req, res) => {
     try {
-        const heroes = await heroService.getAllHeroes();
+        const heroes = await heroService.getAllHeroesByUser(req.user.userId);
         res.json(heroes);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -29,8 +37,10 @@ router.get("/heroes", async (req, res) => {
  * @swagger
  * /heroes:
  *   post:
- *     summary: Crea un nuevo héroe
+ *     summary: Crea un nuevo héroe para el usuario autenticado
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -51,6 +61,8 @@ router.get("/heroes", async (req, res) => {
  *         description: Héroe creado
  *       400:
  *         description: Error de validación
+ *       401:
+ *         description: No autorizado
  */
 router.post("/heroes",
     [
@@ -65,8 +77,8 @@ router.post("/heroes",
 
         try {
             const { name, alias, city, team } = req.body;
-            const newHero = new Hero(null, name, alias, city, team);
-            const addedHero = await heroService.addHero(newHero);
+            const heroData = { name, alias, city, team };
+            const addedHero = await heroService.addHero(heroData, req.user.userId);
 
             res.status(201).json(addedHero);
         } catch (error) {
@@ -78,8 +90,10 @@ router.post("/heroes",
  * @swagger
  * /heroes/{id}:
  *   put:
- *     summary: Actualiza un héroe existente
+ *     summary: Actualiza un héroe existente del usuario autenticado
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -107,10 +121,12 @@ router.post("/heroes",
  *         description: Héroe actualizado
  *       404:
  *         description: Héroe no encontrado
+ *       401:
+ *         description: No autorizado
  */
 router.put("/heroes/:id", async (req, res) => {
     try {
-        const updatedHero = await heroService.updateHero(req.params.id, req.body);
+        const updatedHero = await heroService.updateHero(req.params.id, req.body, req.user.userId);
         res.json(updatedHero);
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -121,8 +137,10 @@ router.put("/heroes/:id", async (req, res) => {
  * @swagger
  * /heroes/{id}:
  *   delete:
- *     summary: Elimina un héroe
+ *     summary: Elimina un héroe del usuario autenticado
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -135,10 +153,12 @@ router.put("/heroes/:id", async (req, res) => {
  *         description: Héroe eliminado
  *       404:
  *         description: Héroe no encontrado
+ *       401:
+ *         description: No autorizado
  */
 router.delete('/heroes/:id', async (req, res) => {
     try {
-        const result = await heroService.deleteHero(req.params.id);
+        const result = await heroService.deleteHero(req.params.id, req.user.userId);
         res.json(result);
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -149,8 +169,10 @@ router.delete('/heroes/:id', async (req, res) => {
  * @swagger
  * /heroes/city/{city}:
  *   get:
- *     summary: Busca héroes por ciudad
+ *     summary: Busca héroes por ciudad del usuario autenticado
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: city
@@ -160,11 +182,13 @@ router.delete('/heroes/:id', async (req, res) => {
  *         description: Ciudad a buscar
  *     responses:
  *       200:
- *         description: Lista de héroes de la ciudad
+ *         description: Lista de héroes de la ciudad del usuario
+ *       401:
+ *         description: No autorizado
  */
 router.get('/heroes/city/:city', async (req, res) => {
     try {
-        const heroes = await heroService.findHeroesByCity(req.params.city);
+        const heroes = await heroService.findHeroesByCity(req.params.city, req.user.userId);
         res.json(heroes);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -175,8 +199,10 @@ router.get('/heroes/city/:city', async (req, res) => {
  * @swagger
  * /heroes/{id}/enfrentar:
  *   post:
- *     summary: Enfrenta a un héroe con un villano
+ *     summary: Enfrenta a un héroe del usuario autenticado con un villano
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -198,10 +224,12 @@ router.get('/heroes/city/:city', async (req, res) => {
  *         description: Resultado del enfrentamiento
  *       404:
  *         description: Héroe no encontrado
+ *       401:
+ *         description: No autorizado
  */
 router.post('/heroes/:id/enfrentar', async (req, res) => {
     try {
-        const result = await heroService.faceVillain(req.params.id, req.body.villain);
+        const result = await heroService.faceVillain(req.params.id, req.body.villain, req.user.userId);
         res.json({ message: result });
     } catch (err) {
         res.status(404).json({ error: err.message });
@@ -214,6 +242,8 @@ router.post('/heroes/:id/enfrentar', async (req, res) => {
  *   post:
  *     summary: Un superhéroe adopta una mascota
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -235,6 +265,8 @@ router.post('/heroes/:id/enfrentar', async (req, res) => {
  *         description: Mascota adoptada por el superhéroe
  *       400:
  *         description: Error de validación o mascota ya adoptada
+ *       401:
+ *         description: Token de acceso requerido
  */
 router.post('/heroes/:id/adopt-pet', async (req, res) => {
     const heroId = parseInt(req.params.id);
@@ -243,7 +275,7 @@ router.post('/heroes/:id/adopt-pet', async (req, res) => {
         return res.status(400).json({ error: "Debes enviar el id de la mascota a adoptar (petId)" });
     }
     try {
-        const pet = await petService.adoptPet(petId, heroId);
+        const pet = await petService.adoptPet(petId, heroId, req.user.userId);
         res.json({ message: `El superhéroe ${heroId} adoptó la mascota ${pet.name}` });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -256,6 +288,8 @@ router.post('/heroes/:id/adopt-pet', async (req, res) => {
  *   post:
  *     summary: Un superhéroe desadopta (libera) una mascota
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -285,7 +319,7 @@ router.post('/heroes/:id/unadopt-pet', async (req, res) => {
         return res.status(400).json({ error: "Debes enviar el id de la mascota a desadoptar (petId)" });
     }
     try {
-        const pets = await import("../repositories/petRepository.js").then(m => m.default.getPets());
+        const pets = await petService.getAllPetsByUser(req.user.userId);
         const pet = pets.find(p => p.id === parseInt(petId));
         if (!pet) {
             return res.status(400).json({ error: "Mascota no encontrada" });
@@ -294,7 +328,7 @@ router.post('/heroes/:id/unadopt-pet', async (req, res) => {
             return res.status(400).json({ error: "La mascota no pertenece a este superhéroe" });
         }
         pet.adoptedBy = null;
-        await import("../repositories/petRepository.js").then(m => m.default.savePets(pets));
+        await pet.save();
         res.json({ message: `El superhéroe ${heroId} desadoptó la mascota ${pet.name}` });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -307,6 +341,8 @@ router.post('/heroes/:id/unadopt-pet', async (req, res) => {
  *   get:
  *     summary: Obtiene las mascotas adoptadas por un superhéroe, junto con el nombre del superhéroe
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -323,14 +359,14 @@ router.post('/heroes/:id/unadopt-pet', async (req, res) => {
 router.get('/heroes/:id/mascotas-adoptadas', async (req, res) => {
     const heroId = parseInt(req.params.id);
     try {
-        // Traer héroes y buscar el héroe
-        const heroes = await import("../repositories/heroRepository.js").then(m => m.default.getHeroes());
+        // Traer héroes del usuario y buscar el héroe
+        const heroes = await heroService.getAllHeroesByUser(req.user.userId);
         const hero = heroes.find(h => h.id === heroId);
         if (!hero) {
             return res.status(404).json({ error: "Superhéroe no encontrado" });
         }
-        // Traer todas las mascotas
-        const pets = await import("../repositories/petRepository.js").then(m => m.default.getPets());
+        // Traer todas las mascotas del usuario
+        const pets = await petService.getAllPetsByUser(req.user.userId);
         // Filtrar las que fueron adoptadas por este héroe
         const adoptedPets = pets.filter(pet => pet.adoptedBy === heroId);
         res.json({
@@ -352,13 +388,17 @@ router.get('/heroes/:id/mascotas-adoptadas', async (req, res) => {
  *   get:
  *     summary: Lista todos los héroes con su respectiva mascota adoptada y sus estadísticas
  *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de héroes con mascota adoptada y estadísticas
+ *       401:
+ *         description: Token de acceso requerido
  */
 router.get('/heroes/with-pet', async (req, res) => {
     try {
-        const result = await heroService.getHeroesWithAdoptedPets();
+        const result = await heroService.getHeroesWithAdoptedPets(req.user.userId);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });

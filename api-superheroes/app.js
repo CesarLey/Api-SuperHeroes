@@ -4,6 +4,7 @@ import petController from './controllers/petController.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import mongoose from 'mongoose';
+import authRoutes from './routes/auth.js';
 
 const options = {
   definition: {
@@ -13,13 +14,36 @@ const options = {
       version: '1.0.0',
       description: 'Documentación de la API de Superhéroes',
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    tags: [
+      {
+        name: 'Autenticación',
+        description: 'Operaciones de registro e inicio de sesión'
+      },
+      {
+        name: 'Héroes',
+        description: 'Operaciones relacionadas con héroes'
+      },
+      {
+        name: 'Mascotas',
+        description: 'Operaciones relacionadas con mascotas'
+      }
+    ],
     servers: [
       {
         url: 'http://localhost:3001/api',
       },
     ],
   },
-  apis: ['./controllers/*.js'], // Aquí buscará los comentarios JSDoc en tus controladores
+  apis: ['./controllers/*.js', './routes/*.js'], // Agrega también las rutas
 };
 
 const swaggerSpec = swaggerJSDoc(options);
@@ -31,6 +55,7 @@ mongoose.connect('mongodb+srv://cesarley15:qWyMmxTAZJ1U7fPD@cluster0.asaxiov.mon
 const app = express()
 
 app.use(express.json())
+app.use('/api/auth', authRoutes);
 app.use('/api', heroController)
 app.use('/api', petController);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))

@@ -37,27 +37,42 @@ async function getAllPets() {
     return await Pet.find();
 }
 
-async function getPetById(id) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function getAllPetsByUser(userId) {
+    const pets = await Pet.find({ userId: userId });
+    // Recalcula y guarda el estado dinámico de las mascotas del usuario
+    for (const pet of pets) {
+        calcularEstadoDinamico(pet);
+        await pet.save();
+    }
+    return await Pet.find({ userId: userId });
+}
+
+async function getPetById(id, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     calcularEstadoDinamico(pet);
     await pet.save();
     return pet;
 }
 
-async function addPet(pet) {
+async function addPet(pet, userId) {
     if (!pet.name || !pet.type) {
         throw new Error("La mascota debe tener nombre y tipo.");
     }
+    // Validar nombre único por usuario
+    const existingPet = await Pet.findOne({ name: pet.name, userId: userId });
+    if (existingPet) {
+        throw new Error("Ya tienes una mascota con ese nombre.");
+    }
     const lastPet = await Pet.findOne().sort({ id: -1 });
     const newId = lastPet ? lastPet.id + 1 : 1;
-    const newPet = new Pet({ ...pet, id: newId });
+    const newPet = new Pet({ ...pet, id: newId, userId: userId });
     await newPet.save();
     return newPet;
 }
 
-async function updatePet(id, updatedPet) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function updatePet(id, updatedPet, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     Object.assign(pet, updatedPet);
     calcularEstadoDinamico(pet);
@@ -65,14 +80,14 @@ async function updatePet(id, updatedPet) {
     return pet;
 }
 
-async function deletePet(id) {
-    const result = await Pet.deleteOne({ id: parseInt(id) });
+async function deletePet(id, userId) {
+    const result = await Pet.deleteOne({ id: parseInt(id), userId: userId });
     if (result.deletedCount === 0) throw new Error('Mascota no encontrada');
     return { message: 'Mascota eliminada' };
 }
 
-async function adoptPet(petId, heroId) {
-    const pet = await Pet.findOne({ id: parseInt(petId) });
+async function adoptPet(petId, heroId, userId) {
+    const pet = await Pet.findOne({ id: parseInt(petId), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (pet.adoptedBy) throw new Error('La mascota ya fue adoptada');
     pet.adoptedBy = heroId;
@@ -81,8 +96,8 @@ async function adoptPet(petId, heroId) {
     return pet;
 }
 
-async function alimentarPet(id, cantidad = 20) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function alimentarPet(id, cantidad = 20, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.adoptedBy) throw new Error('Solo puedes alimentar mascotas adoptadas');
     calcularEstadoDinamico(pet);
@@ -97,8 +112,8 @@ async function alimentarPet(id, cantidad = 20) {
     return pet;
 }
 
-async function banarPet(id) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function banarPet(id, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.adoptedBy) throw new Error('Solo puedes bañar mascotas adoptadas');
     calcularEstadoDinamico(pet);
@@ -112,8 +127,8 @@ async function banarPet(id) {
     return pet;
 }
 
-async function pasearPet(id) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function pasearPet(id, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.adoptedBy) throw new Error('Solo puedes pasear mascotas adoptadas');
     calcularEstadoDinamico(pet);
@@ -128,8 +143,8 @@ async function pasearPet(id) {
     return pet;
 }
 
-async function equiparRopaPet(id, ropa) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function equiparRopaPet(id, ropa, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.adoptedBy) throw new Error('Solo puedes equipar ropa a mascotas adoptadas');
     if (!ropa || !ropa.nombre || !ropa.tipo) throw new Error('Debes especificar la prenda (nombre, tipo)');
@@ -145,8 +160,8 @@ async function equiparRopaPet(id, ropa) {
     return pet;
 }
 
-async function curarPet(id) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function curarPet(id, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.adoptedBy) throw new Error('Solo puedes curar mascotas adoptadas');
     calcularEstadoDinamico(pet);
@@ -162,8 +177,8 @@ async function curarPet(id) {
     return pet;
 }
 
-async function usarPocionSaludPet(id) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function usarPocionSaludPet(id, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.adoptedBy) throw new Error('Solo puedes usar la poción en mascotas adoptadas');
     calcularEstadoDinamico(pet);
@@ -177,8 +192,8 @@ async function usarPocionSaludPet(id) {
     return pet;
 }
 
-async function revivirPet(id) {
-    const pet = await Pet.findOne({ id: parseInt(id) });
+async function revivirPet(id, userId) {
+    const pet = await Pet.findOne({ id: parseInt(id), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (!pet.muerta) throw new Error('La mascota no está muerta, no es necesario revivirla');
     pet.salud = 100;
@@ -196,6 +211,7 @@ async function revivirPet(id) {
 
 export default {
     getAllPets,
+    getAllPetsByUser,
     getPetById,
     addPet,
     updatePet,

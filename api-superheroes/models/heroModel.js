@@ -5,7 +5,8 @@ const heroSchema = new mongoose.Schema({
   name: { type: String, required: true },
   alias: { type: String, required: true },
   city: { type: String },
-  team: { type: String }
+  team: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
 const Hero = mongoose.model('Hero', heroSchema);

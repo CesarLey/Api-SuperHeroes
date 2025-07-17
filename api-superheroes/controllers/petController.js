@@ -2,22 +2,30 @@ import express from "express";
 import { check, validationResult } from 'express-validator';
 import petService from "../services/petService.js";
 import Pet from "../models/petModel.js";
+import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Aplicar middleware de autenticación a todas las rutas
+router.use(authMiddleware);
 
 /**
  * @swagger
  * /pets:
  *   get:
- *     summary: Obtiene todas las mascotas
+ *     summary: Obtiene todas las mascotas del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de mascotas
+ *         description: Lista de mascotas del usuario
+ *       401:
+ *         description: No autorizado
  */
 router.get("/pets", async (req, res) => {
     try {
-        const pets = await petService.getAllPets();
+        const pets = await petService.getAllPetsByUser(req.user.userId);
         res.json(pets);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -28,8 +36,10 @@ router.get("/pets", async (req, res) => {
  * @swagger
  * /pets:
  *   post:
- *     summary: Crea una nueva mascota
+ *     summary: Crea una nueva mascota para el usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -46,6 +56,8 @@ router.get("/pets", async (req, res) => {
  *         description: Mascota creada
  *       400:
  *         description: Error de validación
+ *       401:
+ *         description: No autorizado
  */
 router.post("/pets",
     [
@@ -59,8 +71,8 @@ router.post("/pets",
         }
         try {
             const { name, type } = req.body;
-            const newPet = new Pet(null, name, type);
-            const addedPet = await petService.addPet(newPet);
+            const petData = { name, type };
+            const addedPet = await petService.addPet(petData, req.user.userId);
             res.status(201).json(addedPet);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -72,8 +84,10 @@ router.post("/pets",
  * @swagger
  * /pets/{id}:
  *   put:
- *     summary: Actualiza una mascota existente
+ *     summary: Actualiza una mascota existente del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -97,10 +111,12 @@ router.post("/pets",
  *         description: Mascota actualizada
  *       404:
  *         description: Mascota no encontrada
+ *       401:
+ *         description: No autorizado
  */
 router.put("/pets/:id", async (req, res) => {
     try {
-        const updatedPet = await petService.updatePet(req.params.id, req.body);
+        const updatedPet = await petService.updatePet(req.params.id, req.body, req.user.userId);
         res.json(updatedPet);
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -111,8 +127,10 @@ router.put("/pets/:id", async (req, res) => {
  * @swagger
  * /pets/{id}:
  *   delete:
- *     summary: Elimina una mascota
+ *     summary: Elimina una mascota del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -125,10 +143,12 @@ router.put("/pets/:id", async (req, res) => {
  *         description: Mascota eliminada
  *       404:
  *         description: Mascota no encontrada
+ *       401:
+ *         description: No autorizado
  */
 router.delete('/pets/:id', async (req, res) => {
     try {
-        const result = await petService.deletePet(req.params.id);
+        const result = await petService.deletePet(req.params.id, req.user.userId);
         res.json(result);
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -139,8 +159,10 @@ router.delete('/pets/:id', async (req, res) => {
  * @swagger
  * /pets/{id}/adopt:
  *   post:
- *     summary: Un superhéroe adopta una mascota
+ *     summary: Un superhéroe del usuario autenticado adopta una mascota
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -162,6 +184,8 @@ router.delete('/pets/:id', async (req, res) => {
  *         description: Mascota adoptada
  *       400:
  *         description: Mascota ya adoptada o no encontrada
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/adopt', [
     check('heroId').not().isEmpty().withMessage('El id del superhéroe es requerido')
@@ -171,7 +195,7 @@ router.post('/pets/:id/adopt', [
         return res.status(400).json({ error: errors.array() });
     }
     try {
-        const pet = await petService.adoptPet(req.params.id, req.body.heroId);
+        const pet = await petService.adoptPet(req.params.id, req.body.heroId, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -182,8 +206,10 @@ router.post('/pets/:id/adopt', [
  * @swagger
  * /pets/{id}/alimentar:
  *   post:
- *     summary: Alimenta a la mascota
+ *     summary: Alimenta a la mascota del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -204,13 +230,15 @@ router.post('/pets/:id/adopt', [
  *     responses:
  *       200:
  *         description: Mascota alimentada
- *       400:
- *         description: Error
+ *       404:
+ *         description: Mascota no encontrada
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/alimentar', async (req, res) => {
     try {
         const cantidad = req.body.cantidad || 20;
-        const pet = await petService.alimentarPet(req.params.id, cantidad);
+        const pet = await petService.alimentarPet(req.params.id, cantidad, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -221,8 +249,10 @@ router.post('/pets/:id/alimentar', async (req, res) => {
  * @swagger
  * /pets/{id}/banar:
  *   post:
- *     summary: Baña a la mascota
+ *     summary: Baña a la mascota del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -235,10 +265,12 @@ router.post('/pets/:id/alimentar', async (req, res) => {
  *         description: Mascota bañada
  *       400:
  *         description: Error
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/banar', async (req, res) => {
     try {
-        const pet = await petService.banarPet(req.params.id);
+        const pet = await petService.banarPet(req.params.id, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -249,8 +281,10 @@ router.post('/pets/:id/banar', async (req, res) => {
  * @swagger
  * /pets/{id}/pasear:
  *   post:
- *     summary: Saca a pasear a la mascota
+ *     summary: Saca a pasear a la mascota del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -263,10 +297,12 @@ router.post('/pets/:id/banar', async (req, res) => {
  *         description: Mascota paseada
  *       400:
  *         description: Error
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/pasear', async (req, res) => {
     try {
-        const pet = await petService.pasearPet(req.params.id);
+        const pet = await petService.pasearPet(req.params.id, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -277,8 +313,10 @@ router.post('/pets/:id/pasear', async (req, res) => {
  * @swagger
  * /pets/{id}/equipar-ropa:
  *   post:
- *     summary: Equipa ropa a la mascota
+ *     summary: Equipa ropa a la mascota del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -303,10 +341,12 @@ router.post('/pets/:id/pasear', async (req, res) => {
  *         description: Ropa equipada
  *       400:
  *         description: Error
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/equipar-ropa', async (req, res) => {
     try {
-        const pet = await petService.equiparRopaPet(req.params.id, req.body);
+        const pet = await petService.equiparRopaPet(req.params.id, req.body, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -317,8 +357,10 @@ router.post('/pets/:id/equipar-ropa', async (req, res) => {
  * @swagger
  * /pets/{id}/curar:
  *   post:
- *     summary: Cura a la mascota si está enferma
+ *     summary: Cura a la mascota si está enferma del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -331,10 +373,12 @@ router.post('/pets/:id/equipar-ropa', async (req, res) => {
  *         description: Mascota curada
  *       400:
  *         description: Error
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/curar', async (req, res) => {
     try {
-        const pet = await petService.curarPet(req.params.id);
+        const pet = await petService.curarPet(req.params.id, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -345,8 +389,10 @@ router.post('/pets/:id/curar', async (req, res) => {
  * @swagger
  * /pets/{id}/pocion-salud:
  *   post:
- *     summary: Usa una poción para restaurar la salud de la mascota al 100 y curarla si está enferma
+ *     summary: Usa una poción para restaurar la salud de la mascota al 100 y curarla si está enferma del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -359,10 +405,12 @@ router.post('/pets/:id/curar', async (req, res) => {
  *         description: Mascota restaurada con salud al 100
  *       400:
  *         description: Error
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/pocion-salud', async (req, res) => {
     try {
-        const pet = await petService.usarPocionSaludPet(req.params.id);
+        const pet = await petService.usarPocionSaludPet(req.params.id, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -373,8 +421,10 @@ router.post('/pets/:id/pocion-salud', async (req, res) => {
  * @swagger
  * /pets/{id}/revivir:
  *   post:
- *     summary: Revive a la mascota si está muerta, restaurando sus estadísticas principales
+ *     summary: Revive a la mascota si está muerta, restaurando sus estadísticas principales del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -387,10 +437,12 @@ router.post('/pets/:id/pocion-salud', async (req, res) => {
  *         description: Mascota revivida
  *       400:
  *         description: Error
+ *       401:
+ *         description: No autorizado
  */
 router.post('/pets/:id/revivir', async (req, res) => {
     try {
-        const pet = await petService.revivirPet(req.params.id);
+        const pet = await petService.revivirPet(req.params.id, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -401,8 +453,10 @@ router.post('/pets/:id/revivir', async (req, res) => {
  * @swagger
  * /pets/{id}/estado:
  *   get:
- *     summary: Consulta el estado dinámico de la mascota
+ *     summary: Consulta el estado dinámico de la mascota del usuario autenticado
  *     tags: [Mascotas]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -415,10 +469,12 @@ router.post('/pets/:id/revivir', async (req, res) => {
  *         description: Estado de la mascota
  *       404:
  *         description: Mascota no encontrada
+ *       401:
+ *         description: No autorizado
  */
 router.get('/pets/:id/estado', async (req, res) => {
     try {
-        const pet = await petService.getPetById(req.params.id);
+        const pet = await petService.getPetById(req.params.id, req.user.userId);
         res.json(pet);
     } catch (error) {
         res.status(404).json({ error: error.message });
