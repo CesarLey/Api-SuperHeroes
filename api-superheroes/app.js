@@ -40,7 +40,7 @@ const options = {
     ],
     servers: [
       {
-        url: 'http://localhost:3001/api',
+        url: 'https://api-superheroes-8my1.onrender.com/api',
       },
     ],
   },
