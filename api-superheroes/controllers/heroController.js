@@ -12,6 +12,29 @@ router.use(authMiddleware);
 
 /**
  * @swagger
+ * /heroes/with-pet:
+ *   get:
+ *     summary: Lista todos los héroes con su respectiva mascota adoptada y sus estadísticas
+ *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de héroes con mascota adoptada y estadísticas
+ *       401:
+ *         description: Token de acceso requerido
+ */
+router.get('/heroes/with-pet', async (req, res) => {
+    try {
+        const result = await heroService.getHeroesWithAdoptedPets(req.user.userId);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
  * /heroes:
  *   get:
  *     summary: Obtiene todos los héroes del usuario autenticado
@@ -197,29 +220,6 @@ router.delete('/heroes/:id', async (req, res) => {
         res.json(result);
     } catch (error) {
         res.status(404).json({ error: error.message });
-    }
-});
-
-/**
- * @swagger
- * /heroes/with-pet:
- *   get:
- *     summary: Lista todos los héroes con su respectiva mascota adoptada y sus estadísticas
- *     tags: [Héroes]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de héroes con mascota adoptada y estadísticas
- *       401:
- *         description: Token de acceso requerido
- */
-router.get('/heroes/with-pet', async (req, res) => {
-    try {
-        const result = await heroService.getHeroesWithAdoptedPets(req.user.userId);
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
     }
 });
 
