@@ -35,6 +35,41 @@ router.get("/heroes", async (req, res) => {
 
 /**
  * @swagger
+ * /heroes/{id}:
+ *   get:
+ *     summary: Obtiene un héroe específico del usuario autenticado
+ *     tags: [Héroes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del héroe
+ *     responses:
+ *       200:
+ *         description: Héroe encontrado
+ *       404:
+ *         description: Héroe no encontrado
+ *       401:
+ *         description: No autorizado
+ */
+router.get("/heroes/:id", async (req, res) => {
+    try {
+        const hero = await heroService.getHeroById(req.params.id, req.user.userId);
+        if (!hero) {
+            return res.status(404).json({ error: "Héroe no encontrado" });
+        }
+        res.json(hero);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
  * /heroes:
  *   post:
  *     summary: Crea un nuevo héroe para el usuario autenticado

@@ -9,6 +9,10 @@ async function getAllHeroesByUser(userId) {
     return await Hero.find({ userId: userId });
 }
 
+async function getHeroById(id, userId) {
+    return await Hero.findOne({ _id: id, userId: userId });
+}
+
 async function addHero(hero, userId) {
     if (!hero.name || !hero.alias) {
         throw new Error("El héroe debe tener un nombre y un alias.");
@@ -27,7 +31,7 @@ async function addHero(hero, userId) {
 }
 
 async function updateHero(id, updatedHero, userId) {
-    const hero = await Hero.findOne({ id: parseInt(id), userId: userId });
+    const hero = await Hero.findOne({ _id: id, userId: userId });
     if (!hero) {
         throw new Error('Héroe no encontrado');
     }
@@ -37,7 +41,7 @@ async function updateHero(id, updatedHero, userId) {
 }
 
 async function deleteHero(id, userId) {
-    const result = await Hero.deleteOne({ id: parseInt(id), userId: userId });
+    const result = await Hero.deleteOne({ _id: id, userId: userId });
     if (result.deletedCount === 0) {
         throw new Error('Héroe no encontrado');
     }
@@ -52,7 +56,7 @@ async function findHeroesByCity(city, userId) {
 }
 
 async function faceVillain(heroId, villain, userId) {
-    const hero = await Hero.findOne({ id: parseInt(heroId), userId: userId });
+    const hero = await Hero.findOne({ _id: heroId, userId: userId });
     if (!hero) {
         throw new Error('Héroe no encontrado');
     }
@@ -83,6 +87,7 @@ async function getHeroesWithAdoptedPets(userId) {
 export default {
     getAllHeroes,
     getAllHeroesByUser,
+    getHeroById,
     addHero,
     updateHero,
     deleteHero,
