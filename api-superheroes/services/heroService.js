@@ -41,7 +41,7 @@ async function updateHero(id, updatedHero, userId) {
 }
 
 async function deleteHero(id, userId) {
-    const result = await Hero.deleteOne({ _id: id, userId: userId });
+    const result = await Hero.deleteOne({ id: parseInt(id), userId: userId });
     if (result.deletedCount === 0) {
         throw new Error('Héroe no encontrado');
     }
