@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú Principal | SuperPets</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="title">SuperPets</div>
+    <div class="section-btns">
+      <button class="btn" id="btnHeroes">Héroes</button>
+      <button class="btn" id="btnMascotas">Mascotas</button>
+      <button class="btn" id="btnAdoptar">Adoptar</button>
+      <button class="btn" id="btnVerHeroeMascota">Ver mi héroe y mascota</button>
+    </div>
+    <button class="btn" style="background:#e0eafc;color:#185a9d;margin-top:10px;" id="logoutBtn">Cerrar Sesión</button>
+  </div>
+  <script src="main.js"></script>
+  <script>
+    document.getElementById('btnHeroes').onclick = () => {
+      window.location.href = 'heroes.html';
+    };
+    document.getElementById('btnMascotas').onclick = () => {
+      window.location.href = 'mascotas.html';
+    };
+    document.getElementById('btnAdoptar').onclick = () => {
+      window.location.href = 'adoptar.html';
+    };
+    document.getElementById('btnVerHeroeMascota').onclick = () => {
+      window.location.href = 'heroe-mascota.html';
+    };
+    document.getElementById('logoutBtn').onclick = function() {
+      localStorage.removeItem('superpets_token');
+      window.location.href = 'login.html';
+    };
+  </script>
+</body>
+</html> 

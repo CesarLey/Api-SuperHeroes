@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Héroes - SuperPets</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hero-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .hero-tab {
+            padding: 10px 20px;
+            background: #e0eafc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #185a9d;
+            transition: all 0.3s ease;
+        }
+        
+        .hero-tab.active {
+            background: #185a9d;
+            color: white;
+        }
+        
+        .hero-tab:hover {
+            background: #185a9d;
+            color: white;
+        }
+        
+        .hero-section {
+            display: none;
+        }
+        
+        .hero-section.active {
+            display: block;
+        }
+        
+        .hero-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .hero-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .btn-danger {
+            background: #f44336 !important;
+            color: white !important;
+        }
+        
+        .btn-primary {
+            background: #2196F3 !important;
+            color: white !important;
+        }
+        
+        .btn-success {
+            background: #4CAF50 !important;
+            color: white !important;
+        }
+        .hero-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .container {
+            max-width: 100vw;
+            width: 100vw;
+            min-height: 100vh;
+            background: none;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 0;
+        }
+        
+        .hero-section {
+            display: none;
+            width: 100vw;
+        }
+        .hero-section.active {
+            display: block;
+        }
+        .hero-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            width: 100vw;
+            padding: 0 8vw 16px 8vw;
+            box-sizing: border-box;
+        }
+        .hero-card {
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 18px 10px 24px 10px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 340px;
+            min-width: 0;
+            min-height: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .hero-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        .hero-card p {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .hero-card img, .hero-card svg {
+            max-width: 120px;
+            max-height: 120px;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            .hero-grid {
+                padding: 0 4vw 16px 4vw;
+            }
+            .hero-card {
+                max-width: 98vw;
+                min-height: 260px;
+            }
+        }
+        .hero-customize-form {
+            background: #f7f7f7;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦸‍♂️ Gestión de Héroes</h1>
+        
+        <!-- Pestañas de navegación -->
+        <div class="hero-tabs">
+            <button class="hero-tab active" onclick="showHeroSection('create')">➕ Crear Héroe</button>
+            <button class="hero-tab" onclick="showHeroSection('view')">👀 Ver Héroes</button>
+            <button class="hero-tab" onclick="showHeroSection('manage')">⚙️ Gestionar</button>
+        </div>
+        
+        <!-- Sección: Crear Héroe -->
+        <div id="createSection" class="hero-section active">
+            <h2>Crear Nuevo Héroe</h2>
+            <form id="heroForm" class="hero-card">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="heroName" required>
+                </div>
+                <div class="form-group">
+                    <label>Alias</label>
+                    <input type="text" id="heroAlias" required>
+                </div>
+                <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" id="heroCity" required>
+                </div>
+                <button class="btn btn-success" type="submit">Crear Héroe</button>
+                <div id="createMsg" class="msg"></div>
+            </form>
+        </div>
+        
+        <!-- Sección: Ver Héroes -->
+        <div id="viewSection" class="hero-section">
+            <h2>Mis Héroes</h2>
+            <div id="heroesList"></div>
+        </div>
+        
+
+        
+        <!-- Sección: Gestionar -->
+        <div id="manageSection" class="hero-section">
+            <h2>Gestionar Héroes</h2>
+            <div id="manageContent">
+                <p>Selecciona un héroe en la sección "Ver Héroes" para gestionarlo.</p>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="window.location.href='menu.html'">Volver al menú</button>
+    </div>
+    
+    <script src="main.js"></script>
+    <script>
+        // Verificar autenticación
+        if (!getToken()) {
+            window.location.href = 'login.html';
+        }
+        
+        let currentHeroId = null;
+        let heroToCustomizeId = null;
+        let heroToEditId = null;
+        let heroToDeleteId = null;
+        
+        // Función para cambiar entre secciones
+        function showHeroSection(sectionName) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.hero-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Desactivar todas las pestañas
+            document.querySelectorAll('.hero-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar sección seleccionada
+            document.getElementById(sectionName + 'Section').classList.add('active');
+            
+            // Activar pestaña correspondiente
+            event.target.classList.add('active');
+            
+            // Cargar contenido según la sección
+            switch(sectionName) {
+                case 'view':
+                    loadHeroesList();
+                    break;
+                case 'manage':
+                    loadManageSection();
+                    break;
+            }
+        }
+        
+        // Cargar lista de héroes
+        async function loadHeroesList() {
+            const heroesList = document.getElementById('heroesList');
+            heroesList.innerHTML = '<p>Cargando héroes...</p>';
+            
+            try {
+                const heroes = await fetchHeroes();
+                
+                if (heroes.length === 0) {
+                    heroesList.innerHTML = '<p>No tienes héroes creados. Crea tu primer héroe en la sección "Crear Héroe".</p>';
+                    return;
+                }
+                
+                const heroesGrid = document.createElement('div');
+                heroesGrid.className = 'hero-grid';
+                
+                heroes.slice().reverse().forEach(hero => {
+                    const heroCard = document.createElement('div');
+                    heroCard.className = 'hero-card';
+                    heroCard.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            ${getHeroSVG(hero.id)}
+                        </div>
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <h3>${hero.name} (${hero.alias})</h3>
+                            <p>Ciudad: ${hero.city}</p>
+                            <p>ID: ${hero.id}</p>
+                        </div>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary" onclick="selectHeroForCustomize(${hero.id})">
+                                🎨 Personalizar
+                            </button>
+                        </div>
+                    `;
+                    if (hero.id === heroToCustomizeId) {
+                        const customizeDiv = document.createElement('div');
+                        customizeDiv.className = 'hero-customize-form';
+                        customizeDiv.innerHTML = `
+                            <form onsubmit="return saveHeroCustomizationFromList(event, ${hero.id})" style="margin-top:10px;">
+                                <label>Color del traje: <input type="color" id="suitColor${hero.id}" value="${getHeroColors(hero.id)?.suit || '#185a9d'}"></label><br>
+                                <label>Color del logo: <input type="color" id="logoColor${hero.id}" value="${getHeroColors(hero.id)?.logo || '#FFD600'}"></label><br>
+                                <label>Color del cinturón: <input type="color" id="beltColor${hero.id}" value="${getHeroColors(hero.id)?.belt || '#FFD600'}"></label><br>
+                                <button type="submit" class="btn btn-success" style="margin-top:8px;">Guardar Cambios</button>
+                                <button type="button" class="btn btn-primary" style="margin-top:8px; margin-left:8px;" onclick="cancelCustomizeFromList()">Cancelar</button>
+                            </form>
+                        `;
+                        heroCard.appendChild(customizeDiv);
+                    }
+                    heroesGrid.appendChild(heroCard);
+                    // Asegurar que en ambas secciones, después de crear cada heroCard:
+                    heroCard.style.maxWidth = '340px';
+                    heroCard.style.minWidth = '0';
+                    heroCard.style.minHeight = '340px';
+                });
+                
+                heroesList.innerHTML = '';
+                heroesList.appendChild(heroesGrid);
+                
+            } catch (error) {
+                heroesList.innerHTML = `<p>Error al cargar héroes: ${error.message}</p>`;
+            }
+        }
+        
+        // Cargar sección de personalización
+        function loadCustomizeSection() {
+            const customizeContent = document.getElementById('customizeContent');
+            
+            if (!currentHeroId) {
+                customizeContent.innerHTML = `
+                    <div class="hero-card">
+                        <p>Selecciona un héroe en la sección "Ver Héroes" para personalizarlo.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Cargar datos del héroe seleccionado
+            fetchHeroes().then(heroes => {
+                const hero = heroes.find(h => h.id === currentHeroId);
+                if (!hero) {
+                    customizeContent.innerHTML = `
+                        <div class="hero-card">
+                            <p>Héroe no encontrado.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Cargar colores actuales
+                const colors = getHeroColors(currentHeroId);
+                
+                customizeContent.innerHTML = `
+                    <div class="hero-card">
+                        <h3>Personalizar Héroe</h3>
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h4>${hero.name} (${hero.alias})</h4>
+                            <p>Ciudad: ${hero.city}</p>
+                        </div>
+                        <div id="heroPreview" style="text-align: center; margin-bottom: 20px;">
+                            ${getHeroSVG(currentHeroId)}
+                        </div>
+                        <div class="form-group">
+                            <label>Color del traje:</label>
+                            <input type="color" id="suitColor" value="${colors.suit}" onchange="updateHeroPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Color del logo:</label>
+                            <input type="color" id="logoColor" value="${colors.logo}" onchange="updateHeroPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Color del cinturón:</label>
+                            <input type="color" id="beltColor" value="${colors.belt}" onchange="updateHeroPreview()">
+                        </div>
+                        <button class="btn btn-success" onclick="saveHeroCustomization()">Guardar Cambios</button>
+                        <div id="customizeMsg" class="msg"></div>
+                    </div>
+                `;
+            }).catch(error => {
+                customizeContent.innerHTML = `
+                    <div class="hero-card">
+                        <p>Error al cargar datos del héroe: ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // Cargar sección de gestión
+        async function loadManageSection() {
+            const manageContent = document.getElementById('manageContent');
+            manageContent.innerHTML = '<p>Cargando héroes...</p>';
+            
+            try {
+                const heroes = await fetchHeroes();
+                
+                if (heroes.length === 0) {
+                    manageContent.innerHTML = '<p>No tienes héroes creados. Crea tu primer héroe en la sección "Crear Héroe".</p>';
+                    return;
+                }
+                
+                const heroesGrid = document.createElement('div');
+                heroesGrid.className = 'hero-grid';
+                
+                heroes.slice().reverse().forEach(hero => {
+                    const heroCard = document.createElement('div');
+                    heroCard.className = 'hero-card';
+                    heroCard.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            ${getHeroSVG(hero.id)}
+                        </div>
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <h3>${hero.name} (${hero.alias})</h3>
+                            <p>Ciudad: ${hero.city}</p>
+                            <p>ID: ${hero.id}</p>
+                        </div>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary" onclick="selectHeroForEdit(${hero.id})">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn btn-danger" onclick="selectHeroForDelete(${hero.id})">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Si este héroe está seleccionado para editar, mostrar formulario
+                    if (hero.id === heroToEditId) {
+                        const editDiv = document.createElement('div');
+                        editDiv.className = 'hero-customize-form';
+                        editDiv.innerHTML = `
+                            <div style="text-align: center; margin-bottom: 15px;">
+                                ${getHeroSVG(hero.id)}
+                            </div>
+                            <form onsubmit="return saveHeroEditFromList(event, ${hero.id})" style="margin-top:10px;">
+                                <label>Nombre: <input type="text" id="editName${hero.id}" value="${hero.name}" required></label><br>
+                                <label>Alias: <input type="text" id="editAlias${hero.id}" value="${hero.alias}" required></label><br>
+                                <label>Ciudad: <input type="text" id="editCity${hero.id}" value="${hero.city}" required></label><br>
+                                <button type="submit" class="btn btn-success" style="margin-top:8px;">Guardar Cambios</button>
+                                <button type="button" class="btn btn-primary" style="margin-top:8px; margin-left:8px;" onclick="cancelEditFromList()">Cancelar</button>
+                            </form>
+                        `;
+                        heroCard.appendChild(editDiv);
+                    }
+                    
+                    // Si este héroe está seleccionado para eliminar, mostrar confirmación
+                    if (hero.id === heroToDeleteId) {
+                        const deleteDiv = document.createElement('div');
+                        deleteDiv.className = 'hero-customize-form';
+                        deleteDiv.style.background = '#ffe6e6';
+                        deleteDiv.innerHTML = `
+                            <div style="text-align: center; margin-bottom: 15px;">
+                                ${getHeroSVG(hero.id)}
+                            </div>
+                            <div style="margin-top:10px; text-align: center;">
+                                <p><strong>¿Estás seguro de que quieres eliminar este héroe?</strong></p>
+                                <p>Esta acción no se puede deshacer.</p>
+                                <button class="btn btn-danger" onclick="confirmDeleteHero(${hero.id})" style="margin-top:8px;">🗑️ Eliminar Héroe</button>
+                                <button class="btn btn-primary" onclick="cancelDeleteFromList()" style="margin-top:8px; margin-left:8px;">❌ Cancelar</button>
+                            </div>
+                        `;
+                        heroCard.appendChild(deleteDiv);
+                    }
+                    
+                    heroesGrid.appendChild(heroCard);
+                    // Asegurar que en ambas secciones, después de crear cada heroCard:
+                    heroCard.style.maxWidth = '340px';
+                    heroCard.style.minWidth = '0';
+                    heroCard.style.minHeight = '340px';
+                });
+                
+                manageContent.innerHTML = '';
+                manageContent.appendChild(heroesGrid);
+                
+            } catch (error) {
+                manageContent.innerHTML = `<p>Error al cargar héroes: ${error.message}</p>`;
+            }
+        }
+        
+        // Seleccionar héroe para personalizar
+        function selectHeroForCustomize(heroId) {
+            heroToCustomizeId = heroId;
+            loadHeroesList();
+        }
+        
+        // Seleccionar héroe para editar
+        function selectHeroForEdit(heroId) {
+            heroToEditId = heroId;
+            loadManageSection();
+        }
+        
+        // Seleccionar héroe para eliminar
+        function selectHeroForDelete(heroId) {
+            heroToDeleteId = heroId;
+            loadManageSection();
+        }
+        
+        // Actualizar vista previa del héroe
+        function updateHeroPreview() {
+            const suitColor = document.getElementById('suitColor').value;
+            const logoColor = document.getElementById('logoColor').value;
+            const beltColor = document.getElementById('beltColor').value;
+            
+            // Guardar temporalmente los colores
+            setHeroColors(currentHeroId, {
+                suit: suitColor,
+                logo: logoColor,
+                belt: beltColor
+            });
+            
+            // Actualizar la vista previa usando el ID específico
+            const heroPreview = document.getElementById('heroPreview');
+            if (heroPreview) {
+                heroPreview.innerHTML = getHeroSVG(currentHeroId);
+            }
+        }
+        
+        // Guardar personalización del héroe
+        async function saveHeroCustomization() {
+            const msgDiv = document.getElementById('customizeMsg');
+            msgDiv.textContent = '';
+            
+            try {
+                const colors = getHeroColors(currentHeroId);
+                setHeroColors(currentHeroId, colors);
+                
+                msgDiv.style.color = '#43cea2';
+                msgDiv.textContent = '¡Personalización guardada con éxito!';
+                
+                setTimeout(() => {
+                    msgDiv.textContent = '';
+                }, 2000);
+                
+            } catch (error) {
+                msgDiv.style.color = '#e57373';
+                msgDiv.textContent = `Error al guardar: ${error.message}`;
+            }
+        }
+        
+        // Guardar edición del héroe
+        async function saveHeroEditFromList(e, heroId) {
+            e.preventDefault();
+            
+            const name = document.getElementById('editName'+heroId).value.trim();
+            const alias = document.getElementById('editAlias'+heroId).value.trim();
+            const city = document.getElementById('editCity'+heroId).value.trim();
+            
+            if (!name || !alias || !city) {
+                showEditMsg(heroId, 'Por favor, completa todos los campos.', true);
+                return false;
+            }
+            
+            try {
+                const res = await updateHero(heroId, { name, alias, city });
+                if (res.error) {
+                    showEditMsg(heroId, res.error || 'Error al actualizar héroe.', true);
+                    return false;
+                }
+                showEditMsg(heroId, '¡Héroe actualizado con éxito!', false);
+                setTimeout(() => {
+                    heroToEditId = null;
+                    loadManageSection();
+                }, 2000);
+            } catch (error) {
+                showEditMsg(heroId, `Error al actualizar: ${error.message}`, true);
+            }
+            
+            return false;
+        }
+        
+        // Confirmar eliminación del héroe
+        async function confirmDeleteHero(heroId) {
+            try {
+                await deleteHeroFromAPI(heroId);
+                heroToDeleteId = null;
+                loadManageSection();
+                alert('¡Héroe eliminado con éxito!');
+            } catch (error) {
+                alert(`Error al eliminar: ${error.message}`);
+            }
+        }
+        
+        // Cancelar edición
+        function cancelEditFromList() {
+            heroToEditId = null;
+            loadManageSection();
+        }
+        
+        // Cancelar eliminación
+        function cancelDeleteFromList() {
+            heroToDeleteId = null;
+            loadManageSection();
+        }
+        
+        // Función para eliminar héroe de la API
+        async function deleteHeroFromAPI(heroId) {
+            try {
+                const response = await fetch(`${API_URL}/api/heroes/${heroId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error al eliminar héroe:', error);
+                throw error;
+            }
+        }
+        
+        // Manejar formulario de creación
+        document.getElementById('heroForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const msgDiv = document.getElementById('createMsg');
+            msgDiv.textContent = '';
+            
+            const name = document.getElementById('heroName').value.trim();
+            const alias = document.getElementById('heroAlias').value.trim();
+            const city = document.getElementById('heroCity').value.trim();
+            
+            if (!name || !alias || !city) {
+                msgDiv.style.color = '#e57373';
+                msgDiv.textContent = 'Por favor, completa todos los campos.';
+                return;
+            }
+            
+            try {
+                const newHero = await createHero({ name, alias, city });
+                if (newHero) {
+                    msgDiv.style.color = '#43cea2';
+                    msgDiv.textContent = '¡Héroe creado con éxito!';
+                    // Limpiar formulario
+                    document.getElementById('heroForm').reset();
+                    // Recargar lista de héroes en la sección de ver héroes (si el usuario cambia de pestaña)
+                    loadHeroesList();
+                    // Mantener la sección de creación activa (NO cambiar de sección)
+                } else {
+                    msgDiv.style.color = '#e57373';
+                    msgDiv.textContent = 'Error al crear héroe.';
+                }
+            } catch (error) {
+                msgDiv.style.color = '#e57373';
+                msgDiv.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        function saveHeroCustomizationFromList(e, heroId) {
+            e.preventDefault();
+            setHeroColors(heroId, {
+                suit: document.getElementById('suitColor'+heroId).value,
+                logo: document.getElementById('logoColor'+heroId).value,
+                belt: document.getElementById('beltColor'+heroId).value
+            });
+            heroToCustomizeId = null;
+            loadHeroesList();
+            return false;
+        }
+        function cancelCustomizeFromList() {
+            heroToCustomizeId = null;
+            loadHeroesList();
+        }
+        
+        // Cargar lista inicial de héroes
+        loadHeroesList();
+
+        // Función auxiliar para mostrar mensajes debajo del formulario de edición:
+        function showEditMsg(heroId, msg, isError) {
+            let msgDiv = document.getElementById('editMsg'+heroId);
+            if (!msgDiv) {
+                const form = document.querySelector(`#editName${heroId}`).closest('form');
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'editMsg'+heroId;
+                msgDiv.className = 'msg';
+                form.appendChild(msgDiv);
+            }
+            msgDiv.textContent = msg;
+            msgDiv.style.color = isError ? '#d32f2f' : '#43cea2';
+        }
+    </script>
+</body>
+</html> 

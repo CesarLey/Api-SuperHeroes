@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Héroe y Mascota - SuperPets</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+        }
+        /* Estilos específicos para la interfaz tipo Pou */
+        .pou-container {
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 50%, #4CAF50 100%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn.walk { background: #4CAF50; }
+        .action-btn.bathe { background: #2196F3; }
+        .action-btn.feed { background: #FF9800; }
+        .action-btn.adopt { background: #9C27B0; }
+        .action-btn.logout { background: #f44336; }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+        }
+
+        .center-display {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landscape {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(to top, #4CAF50, #8BC34A);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+
+        .characters {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            gap: 100px;
+            align-items: flex-end;
+        }
+
+        .character {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .character svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 10px;
+        }
+
+        .character-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .right-panel {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #FFD700;
+        }
+
+        .status-bar {
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .progress-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease-out;
+        }
+
+        .progress-bar.health { background: #f44336; }
+        .progress-bar.hunger { background: #FF9800; }
+        .progress-bar.hygiene { background: #2196F3; }
+        .progress-bar.happiness { background: #FFD700; }
+
+        .progress-text {
+            margin-left: 18px;
+            font-size: 14px;
+            min-width: 36px;
+            font-weight: bold;
+        }
+
+        .food-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .food-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .food-item:hover {
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .food-item.selected {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .food-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .food-name {
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .food-effect {
+            font-size: 10px;
+            color: #4CAF50;
+        }
+
+        .hidden {
+            display: none;
+        }
+        .status-label {
+            margin-left: 6px;
+            margin-right: 12px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        /* Botón flotante para volver al menú principal */
+        .btn-menu {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 1001;
+            background: #2196F3;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-menu:hover {
+            background: #1769aa;
+        }
+        .feed-button {
+            width: 100%;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 15px;
+        }
+        
+        .feed-button:hover {
+            background: #d32f2f;
+        }
+        @keyframes blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes arm-wave {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-20deg); }
+}
+@keyframes arm-wave-right {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes ear-wiggle {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(-35deg); }
+}
+@keyframes ear-wiggle-right {
+  0%, 100% { transform: rotate(20deg); }
+  50% { transform: rotate(35deg); }
+}
+    </style>
+</head>
+<body>
+    <!-- Botón de menú principal ahora en la barra superior -->
+    <div class="pou-container">
+        <!-- Barra superior -->
+        <div class="top-bar">
+            <div class="action-buttons">
+                <button class="action-btn walk" onclick="performPetActionAction(currentPetId, 'pasear')">🚶 Pasear</button>
+                <button class="action-btn bathe" onclick="performPetActionAction(currentPetId, 'banar')">🚿 Bañar</button>
+                <button class="action-btn feed" onclick="showFoodPanel()">🍽️ Alimentar</button>
+                <button class="action-btn adopt" onclick="window.location.href='adoptar.html'">🏠 Adoptar/Desadoptar</button>
+                <button class="action-btn revive" onclick="performPetActionAction(currentPetId, 'revivir')" style="background: #9C27B0;">💖 Revivir</button>
+                <button class="action-btn cure" onclick="performPetActionAction(currentPetId, 'curar')" style="background: #e57373;">💊 Curar</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="action-btn menu-btn" onclick="window.location.href='menu.html'" style="background: #2196F3; font-size: 16px; padding: 8px 22px;">🏠 Menú Principal</button>
+                <button class="action-btn debug-btn" onclick="debugPetStats()" style="background: #FF9800; font-size: 16px; padding: 8px 22px;">🔍 Debug</button>
+                <button class="action-btn test-btn" onclick="testUpdate()" style="background: #4CAF50; font-size: 16px; padding: 8px 22px;">🧪 Test</button>
+                <button class="action-btn logout" onclick="logout()">❌ Cerrar sesión</button>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="main-content">
+            <!-- Panel izquierdo - Estado de la mascota -->
+            <div class="left-panel">
+                <div class="panel-title">Estado de la Mascota</div>
+                <div id="petStatus">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                <div id="lastUpdate" style="text-align: center; margin-top: 15px; font-size: 12px; color: #888;">
+                    Última actualización: <span id="updateTime">Cargando...</span>
+                </div>
+            </div>
+
+            <!-- Centro - Personajes -->
+            <div class="center-display">
+                <div class="landscape"></div>
+                <div class="characters" id="charactersContainer">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Panel derecho - Alimentar mascota -->
+            <div class="right-panel">
+                <div class="panel-title">Alimentar Mascota</div>
+                <div class="food-grid">
+                    <div class="food-item" data-food="Pizza" data-effect="25" onclick="selectFood(this)">
+                        <div class="food-icon">🍕</div>
+                        <div class="food-name">Pizza</div>
+                        <div class="food-effect">+25</div>
+                    </div>
+                    <div class="food-item" data-food="Hamburguesa" data-effect="30" onclick="selectFood(this)">
+                        <div class="food-icon">🍔</div>
+                        <div class="food-name">Hamburguesa</div>
+                        <div class="food-effect">+30</div>
+                    </div>
+                    <div class="food-item" data-food="Ensalada" data-effect="8" onclick="selectFood(this)">
+                        <div class="food-icon">🥗</div>
+                        <div class="food-name">Ensalada</div>
+                        <div class="food-effect">+8</div>
+                    </div>
+                    <div class="food-item" data-food="Helado" data-effect="12" onclick="selectFood(this)">
+                        <div class="food-icon">🍦</div>
+                        <div class="food-name">Helado</div>
+                        <div class="food-effect">+12</div>
+                    </div>
+                    <div class="food-item" data-food="Manzana" data-effect="10" onclick="selectFood(this)">
+                        <div class="food-icon">🍎</div>
+                        <div class="food-name">Manzana</div>
+                        <div class="food-effect">+10</div>
+                    </div>
+                    <div class="food-item" data-food="Leche" data-effect="20" onclick="selectFood(this)">
+                        <div class="food-icon">🥛</div>
+                        <div class="food-name">Leche</div>
+                        <div class="food-effect">+20</div>
+                    </div>
+                </div>
+                <button class="feed-button" onclick="feedSelectedFood()">🍽️ Comer</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+    <script>
+        let currentPetId = null;
+        let selectedFood = null;
+
+        // Verificar autenticación
+        if (!getToken()) {
+            window.location.href = 'login.html';
+        }
+
+        // Función para seleccionar comida
+        function selectFood(element) {
+            // Remover selección anterior
+            document.querySelectorAll('.food-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Seleccionar el elemento actual
+            element.classList.add('selected');
+            selectedFood = element.getAttribute('data-food');
+        }
+
+        // Mostrar panel de comida
+        function showFoodPanel() {
+            document.getElementById('foodPanel').classList.remove('hidden');
+        }
+
+        // Alimentar con comida seleccionada
+        async function feedSelectedFood() {
+            if (!selectedFood || !currentPetId) {
+                showMessage('Selecciona una comida primero', 'warning');
+                return;
+            }
+            
+            console.log('🍽️ FRONTEND - Iniciando alimentación:', {
+                selectedFood: selectedFood,
+                currentPetId: currentPetId
+            });
+            
+            try {
+                // Verificar si la mascota está adoptada
+                const pets = await fetchPets();
+                const pet = pets.find(p => p.id === currentPetId);
+                
+                console.log('🐾 FRONTEND - Estado actual de la mascota:', {
+                    id: pet.id,
+                    nombre: pet.name,
+                    hambreActual: pet.hambre,
+                    adoptada: !!pet.adoptedBy
+                });
+                
+                if (!pet) {
+                    showMessage('Mascota no encontrada', 'error');
+                    return;
+                }
+                
+                if (!pet.adoptedBy) {
+                    showMessage('Solo puedes alimentar mascotas adoptadas', 'error');
+                    return;
+                }
+                
+                if (pet.muerta) {
+                    showMessage('No puedes alimentar a una mascota muerta. Usa el botón "Revivir"', 'error');
+                    return;
+                }
+                
+                // Obtener la cantidad del alimento seleccionado
+                const foodElement = document.querySelector(`[data-food="${selectedFood}"]`);
+                const cantidad = parseInt(foodElement.getAttribute('data-effect'));
+                
+                console.log('🍕 FRONTEND - Alimento seleccionado:', {
+                    nombre: selectedFood,
+                    cantidad: cantidad,
+                    elemento: foodElement
+                });
+                
+                // Llamar a la API para alimentar
+                const result = await performPetAction(currentPetId, 'alimentar', cantidad);
+                
+                console.log('📡 FRONTEND - Respuesta de la API:', result);
+                
+                if (result && result.pet) {
+                    console.log('✅ FRONTEND - Mascota alimentada exitosamente:', {
+                        hambreAntes: pet.hambre,
+                        cantidadAlimento: cantidad,
+                        hambreDespues: result.pet.hambre,
+                        diferencia: pet.hambre - result.pet.hambre
+                    });
+                    
+                    // Actualizar estadísticas inmediatamente con animación
+                    await updatePouStatsWithAnimation(result.pet);
+                    
+                    // Mostrar mensaje de éxito
+                    showMessage(`¡${selectedFood} alimentado exitosamente! (+${cantidad})`, 'success');
+                    
+                    // Actualizar indicador de tiempo
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    const updateTimeElement = document.getElementById('updateTime');
+                    if (updateTimeElement) {
+                        updateTimeElement.textContent = timeString;
+                    }
+                    
+                    console.log('Mascota alimentada:', result.pet);
+                }
+                
+                // Limpiar selección
+                selectedFood = null;
+                document.querySelectorAll('.food-item').forEach(i => i.classList.remove('selected'));
+                
+            } catch (error) {
+                console.error('❌ FRONTEND - Error al alimentar:', error);
+                showMessage(`Error al alimentar: ${error.message}`, 'error');
+            }
+        }
+
+        // Cerrar sesión
+        function logout() {
+            localStorage.removeItem('superpets_token');
+            window.location.href = 'login.html';
+        }
+
+        // Mostrar mensajes en la interfaz
+        function showMessage(message, type = 'info') {
+            // Crear elemento de mensaje
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 10px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                animation: slideIn 0.3s ease-out;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            
+            // Colores según tipo
+            const colors = {
+                success: '#4CAF50',
+                error: '#f44336',
+                info: '#2196F3',
+                warning: '#FF9800'
+            };
+            
+            messageDiv.style.background = colors[type] || colors.info;
+            messageDiv.textContent = message;
+            
+            // Agregar animación CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(messageDiv);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Renderizar la interfaz
+        async function renderPouInterface() {
+            try {
+                const heroes = await fetchHeroes();
+                const pets = await fetchPets();
+                
+                if (heroes.length === 0 || pets.length === 0) {
+                    document.querySelector('.characters').innerHTML = `
+                        <div style="color: white; text-align: center;">
+                            <h3>No tienes héroe o mascota</h3>
+                            <p>Ve al menú para crear tu héroe y mascota</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const hero = heroes[0];
+                const pet = pets[0];
+                currentPetId = pet.id;
+
+                // Verificar si la mascota está adoptada
+                const isAdopted = pet.adoptedBy && pet.adoptedBy === hero.id;
+
+                // Renderizar personajes
+                const colors = getHeroColors(hero.id);
+                document.getElementById('charactersContainer').innerHTML = `
+                    <div class="character">
+                        <div>${getHeroSVG(hero.id)}</div>
+                        <div class="character-name">${hero.name} (${hero.alias})</div>
+                    </div>
+                    <div class="character">
+                        <div>${getPetSVG(pet.type)}</div>
+                        <div class="character-name">${pet.name} (${pet.type})</div>
+                        ${isAdopted ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 5px;">✅ Adoptada</div>' : '<div style="color: #FF9800; font-size: 12px; margin-top: 5px;">⚠️ No adoptada</div>'}
+                    </div>
+                `;
+
+                // Renderizar estado de la mascota
+                document.getElementById('petStatus').innerHTML = `
+                    <div class="status-bar">
+                        <div class="status-item">
+                            <span class="status-icon">❤️</span> <span class="status-label">Salud</span>
+                            <div class="progress-container">
+                                <div class="progress-bar health" style="width: ${pet.salud || 50}%"></div>
+                            </div>
+                            <span class="progress-text">${pet.salud || 50}%</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-icon">🍽️</span> <span class="status-label">Hambre</span>
+                            <div class="progress-container">
+                                <div class="progress-bar hunger" style="width: ${pet.hambre || 50}%"></div>
+                            </div>
+                            <span class="progress-text">${pet.hambre || 50}%</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-icon">🚿</span> <span class="status-label">Limpieza</span>
+                            <div class="progress-container">
+                                <div class="progress-bar hygiene" style="width: ${pet.limpieza || 50}%"></div>
+                            </div>
+                            <span class="progress-text">${pet.limpieza || 50}%</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-icon">😊</span> <span class="status-label">Felicidad</span>
+                            <div class="progress-container">
+                                <div class="progress-bar happiness" style="width: ${pet.felicidad || 50}%"></div>
+                            </div>
+                            <span class="progress-text">${pet.felicidad || 50}%</span>
+                        </div>
+                    </div>
+                `;
+
+                // Inicializar indicador de tiempo
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('es-ES', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const updateTimeElement = document.getElementById('updateTime');
+                if (updateTimeElement) {
+                    updateTimeElement.textContent = timeString;
+                }
+                
+                // Actualizar indicadores de estado iniciales
+                await updatePouStatsWithAnimation(pet);
+
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                document.querySelector('.characters').innerHTML = `
+                    <div style="color: white; text-align: center;">
+                        <h3>Error al cargar datos</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Función para actualizar estadísticas automáticamente
+        async function updatePetStats() {
+            console.log('🔄 updatePetStats() ejecutándose...');
+            if (!currentPetId) {
+                console.log('❌ No hay currentPetId, saliendo...');
+                return;
+            }
+            
+            try {
+                console.log('📡 Haciendo petición a la API...');
+                // Hacer petición a la API para obtener datos actualizados con cálculo dinámico
+                const token = getToken();
+                const response = await fetch(`${API_URL}/api/pets`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                console.log('📊 Respuesta de la API:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const pets = await response.json();
+                    console.log('📋 Mascotas recibidas:', pets.length);
+                    
+                    const pet = pets.find(p => p.id === currentPetId);
+                    if (pet) {
+                        console.log('🐾 Mascota encontrada:', {
+                            id: pet.id,
+                            nombre: pet.name,
+                            salud: pet.salud,
+                            hambre: pet.hambre,
+                            limpieza: pet.limpieza,
+                            felicidad: pet.felicidad,
+                            enfermo: pet.enfermo,
+                            muerta: pet.muerta,
+                            ultimoEstado: pet.ultimoEstado
+                        });
+                        
+                        // Actualizar estadísticas con animación suave
+                        await updatePouStatsWithAnimation(pet);
+                        
+                        // Actualizar indicador de tiempo
+                        const now = new Date();
+                        const timeString = now.toLocaleTimeString('es-ES', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                        const updateTimeElement = document.getElementById('updateTime');
+                        if (updateTimeElement) {
+                            updateTimeElement.textContent = timeString;
+                        }
+                        
+                        // Verificar si la mascota está adoptada
+                        const heroes = await fetchHeroes();
+                        const hero = heroes[0];
+                        const isAdopted = pet.adoptedBy && pet.adoptedBy === hero.id;
+                        
+                        console.log('✅ Estadísticas actualizadas:', {
+                            salud: pet.salud,
+                            hambre: pet.hambre,
+                            limpieza: pet.limpieza,
+                            felicidad: pet.felicidad,
+                            enfermo: pet.enfermo,
+                            muerta: pet.muerta,
+                            adoptada: isAdopted,
+                            adoptadaPor: pet.adoptedBy,
+                            tiempo: timeString
+                        });
+                        
+                        // Mostrar mensaje si la mascota no está adoptada
+                        if (!isAdopted) {
+                            console.log('⚠️ La mascota no está adoptada. Las estadísticas no cambiarán dinámicamente.');
+                        }
+                    } else {
+                        console.log('❌ Mascota no encontrada con ID:', currentPetId);
+                    }
+                } else {
+                    console.log('❌ Error en la respuesta de la API:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Error al actualizar estadísticas:', error);
+            }
+        }
+
+        // Función para actualizar estadísticas con animación suave
+        async function updatePouStatsWithAnimation(pet) {
+            console.log('🎨 updatePouStatsWithAnimation() ejecutándose con mascota:', pet.name);
+            console.log('📊 VALORES RECIBIDOS:', {
+                salud: pet.salud,
+                hambre: pet.hambre,
+                limpieza: pet.limpieza,
+                felicidad: pet.felicidad,
+                tipos: {
+                    salud: typeof pet.salud,
+                    hambre: typeof pet.hambre,
+                    limpieza: typeof pet.limpieza,
+                    felicidad: typeof pet.felicidad
+                }
+            });
+            
+            const healthBar = document.querySelector('.progress-bar.health');
+            const hungerBar = document.querySelector('.progress-bar.hunger');
+            const hygieneBar = document.querySelector('.progress-bar.hygiene');
+            const happinessBar = document.querySelector('.progress-bar.happiness');
+            
+            console.log('📊 Barras encontradas:', {
+                health: !!healthBar,
+                hunger: !!hungerBar,
+                hygiene: !!hygieneBar,
+                happiness: !!happinessBar
+            });
+            
+            // Función para animar el cambio de valor
+            function animateBar(bar, newValue, textElement) {
+                if (!bar || !textElement) {
+                    console.log('❌ Barra o texto no encontrado');
+                    return;
+                }
+                
+                // Obtener el valor actual de la barra de manera más robusta
+                let currentValue = 0;
+                if (bar.style.width) {
+                    currentValue = parseInt(bar.style.width) || 0;
+                } else {
+                    // Si no hay style.width, intentar obtener del texto
+                    currentValue = parseInt(textElement.textContent) || 0;
+                }
+                
+                const targetValue = newValue || 50;
+                
+                console.log('🔄 Animando barra:', {
+                    currentValue: currentValue,
+                    targetValue: targetValue,
+                    barClass: bar.className,
+                    textElement: textElement.textContent
+                });
+                
+                // Siempre actualizar, incluso si el valor parece igual
+                // (puede haber problemas de precisión o tipos de datos)
+                console.log('🎬 Iniciando animación...');
+                
+                // Animar el cambio
+                const startTime = Date.now();
+                const duration = 500; // 500ms para la animación
+                
+                function updateAnimation() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Función de easing suave
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    
+                    const currentWidth = currentValue + (targetValue - currentValue) * easeOutQuart;
+                    
+                    bar.style.width = `${currentWidth}%`;
+                    textElement.textContent = `${Math.round(currentWidth)}%`;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateAnimation);
+                    } else {
+                        console.log('✅ Animación completada para', bar.className, 'valor final:', targetValue);
+                    }
+                }
+                
+                requestAnimationFrame(updateAnimation);
+            }
+            
+            // Animar cada barra
+            if (healthBar) {
+                const healthText = document.querySelector('.progress-bar.health').closest('.status-item').querySelector('.progress-text');
+                console.log('🏥 Animando salud:', { valor: pet.salud, tipo: typeof pet.salud });
+                animateBar(healthBar, pet.salud, healthText);
+            }
+            
+            if (hungerBar) {
+                const hungerText = document.querySelector('.progress-bar.hunger').closest('.status-item').querySelector('.progress-text');
+                console.log('🍽️ Animando hambre:', { valor: pet.hambre, tipo: typeof pet.hambre });
+                animateBar(hungerBar, pet.hambre, hungerText);
+            }
+            
+            if (hygieneBar) {
+                const hygieneText = document.querySelector('.progress-bar.hygiene').closest('.status-item').querySelector('.progress-text');
+                console.log('🚿 Animando limpieza:', { valor: pet.limpieza, tipo: typeof pet.limpieza });
+                animateBar(hygieneBar, pet.limpieza, hygieneText);
+            }
+            
+            if (happinessBar) {
+                const happinessText = document.querySelector('.progress-bar.happiness').closest('.status-item').querySelector('.progress-text');
+                console.log('😊 Animando felicidad:', { valor: pet.felicidad, tipo: typeof pet.felicidad });
+                animateBar(happinessBar, pet.felicidad, happinessText);
+            }
+            
+            // Actualizar indicadores de estado
+            const petStatus = document.getElementById('petStatus');
+            if (petStatus) {
+                // Remover TODOS los indicadores de estado anteriores
+                const oldEnfermo = petStatus.querySelector('#enfermo-indicator');
+                const oldMuerta = petStatus.querySelector('#muerta-indicator');
+                const oldRevive = petStatus.querySelector('#revive-indicator');
+                const oldNoAdopted = petStatus.querySelector('#no-adopted-indicator');
+                
+                if (oldEnfermo) oldEnfermo.remove();
+                if (oldMuerta) oldMuerta.remove();
+                if (oldRevive) oldRevive.remove();
+                if (oldNoAdopted) oldNoAdopted.remove();
+                
+                // Agregar nuevos indicadores solo si es necesario
+                if (pet.enfermo) {
+                    const enfermoDiv = document.createElement('div');
+                    enfermoDiv.id = 'enfermo-indicator';
+                    enfermoDiv.style.cssText = 'color: #f44336; text-align: center; margin-top: 10px; font-weight: bold;';
+                    enfermoDiv.textContent = '🤒 Enfermo';
+                    petStatus.appendChild(enfermoDiv);
+                }
+                
+                if (pet.muerta) {
+                    const muertaDiv = document.createElement('div');
+                    muertaDiv.id = 'muerta-indicator';
+                    muertaDiv.style.cssText = 'color: #f44336; text-align: center; margin-top: 10px; font-weight: bold;';
+                    muertaDiv.textContent = '💀 Muerta';
+                    petStatus.appendChild(muertaDiv);
+                    
+                    const reviveDiv = document.createElement('div');
+                    reviveDiv.id = 'revive-indicator';
+                    reviveDiv.style.cssText = 'color: #FF9800; text-align: center; margin-top: 10px; font-weight: bold; font-size: 12px;';
+                    reviveDiv.textContent = '💖 Usa el botón "Revivir" para traerla de vuelta';
+                    petStatus.appendChild(reviveDiv);
+                }
+                
+                // Verificar si la mascota está adoptada
+                const heroes = await fetchHeroes();
+                const hero = heroes[0];
+                const isAdopted = pet.adoptedBy && pet.adoptedBy === hero.id;
+                
+                if (!isAdopted) {
+                    const noAdoptedDiv = document.createElement('div');
+                    noAdoptedDiv.id = 'no-adopted-indicator';
+                    noAdoptedDiv.style.cssText = 'color: #FF9800; text-align: center; margin-top: 10px; font-weight: bold; font-size: 12px;';
+                    noAdoptedDiv.innerHTML = '⚠️ Mascota no adoptada<br>Las estadísticas no cambian dinámicamente';
+                    petStatus.appendChild(noAdoptedDiv);
+                }
+            }
+        }
+
+        // Función de debug para ver valores exactos
+        async function debugPetStats() {
+            if (!currentPetId) {
+                alert('No hay mascota seleccionada');
+                return;
+            }
+            
+            try {
+                console.log('🔍 DEBUG - Obteniendo valores exactos de la API...');
+                
+                // Obtener valores directamente de la API
+                const token = getToken();
+                const response = await fetch(`${API_URL}/api/pets`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (response.ok) {
+                    const pets = await response.json();
+                    const pet = pets.find(p => p.id === currentPetId);
+                    
+                    if (pet) {
+                        // Obtener valores de la interfaz
+                        const healthBar = document.querySelector('.progress-bar.health');
+                        const hungerBar = document.querySelector('.progress-bar.hunger');
+                        const hygieneBar = document.querySelector('.progress-bar.hygiene');
+                        const happinessBar = document.querySelector('.progress-bar.happiness');
+                        
+                        const interfaceValues = {
+                            salud: healthBar ? parseInt(healthBar.style.width) : 'N/A',
+                            hambre: hungerBar ? parseInt(hungerBar.style.width) : 'N/A',
+                            limpieza: hygieneBar ? parseInt(hygieneBar.style.width) : 'N/A',
+                            felicidad: happinessBar ? parseInt(happinessBar.style.width) : 'N/A'
+                        };
+                        
+                        const apiValues = {
+                            salud: pet.salud,
+                            hambre: pet.hambre,
+                            limpieza: pet.limpieza,
+                            felicidad: pet.felicidad,
+                            enfermo: pet.enfermo,
+                            muerta: pet.muerta,
+                            ultimoEstado: pet.ultimoEstado
+                        };
+                        
+                        console.log('🔍 DEBUG - Comparación de valores:');
+                        console.log('📱 INTERFAZ:', interfaceValues);
+                        console.log('🌐 API:', apiValues);
+                        
+                        // Mostrar alerta con la información
+                        const message = `
+🔍 DEBUG - Valores de la mascota:
+
+📱 INTERFAZ (lo que ves):
+• Salud: ${interfaceValues.salud}%
+• Hambre: ${interfaceValues.hambre}%
+• Limpieza: ${interfaceValues.limpieza}%
+• Felicidad: ${interfaceValues.felicidad}%
+
+🌐 API (base de datos):
+• Salud: ${apiValues.salud}%
+• Hambre: ${apiValues.hambre}%
+• Limpieza: ${apiValues.limpieza}%
+• Felicidad: ${apiValues.felicidad}%
+• Enfermo: ${apiValues.enfermo}
+• Muerta: ${apiValues.muerta}
+
+⏰ Último estado: ${apiValues.ultimoEstado}
+                        `;
+                        
+                        alert(message);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ DEBUG - Error:', error);
+                alert('Error al obtener datos de debug: ' + error.message);
+            }
+        }
+
+        // Función de prueba para actualización controlada
+        async function testUpdate() {
+            if (!currentPetId) {
+                alert('No hay mascota seleccionada');
+                return;
+            }
+            
+            try {
+                console.log('🧪 TEST - Iniciando prueba de actualización...');
+                
+                // 1. Obtener estado actual
+                const token = getToken();
+                const response = await fetch(`${API_URL}/api/pets`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (response.ok) {
+                    const pets = await response.json();
+                    const pet = pets.find(p => p.id === currentPetId);
+                    
+                    if (pet) {
+                        console.log('🧪 TEST - Estado actual de la API:', {
+                            hambre: pet.hambre,
+                            tipo: typeof pet.hambre
+                        });
+                        
+                        // 2. Forzar actualización visual
+                        console.log('🧪 TEST - Forzando actualización visual...');
+                        await updatePouStatsWithAnimation(pet);
+                        
+                        // 3. Verificar estado después de actualizar
+                        setTimeout(async () => {
+                            const healthBar = document.querySelector('.progress-bar.health');
+                            const hungerBar = document.querySelector('.progress-bar.hunger');
+                            const hygieneBar = document.querySelector('.progress-bar.hygiene');
+                            const happinessBar = document.querySelector('.progress-bar.happiness');
+                            
+                            const visualValues = {
+                                salud: healthBar ? parseInt(healthBar.style.width) : 'N/A',
+                                hambre: hungerBar ? parseInt(hungerBar.style.width) : 'N/A',
+                                limpieza: hygieneBar ? parseInt(hygieneBar.style.width) : 'N/A',
+                                felicidad: happinessBar ? parseInt(happinessBar.style.width) : 'N/A'
+                            };
+                            
+                            console.log('🧪 TEST - Valores visuales después de actualizar:', visualValues);
+                            
+                            const message = `
+🧪 TEST - Resultado de la prueba:
+
+🌐 API (backend):
+• Hambre: ${pet.hambre}%
+
+📱 INTERFAZ (frontend):
+• Hambre: ${visualValues.hambre}%
+
+${visualValues.hambre === pet.hambre ? '✅ Sincronizados' : '❌ Desincronizados'}
+                            `;
+                            
+                            alert(message);
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ TEST - Error:', error);
+                alert('Error en la prueba: ' + error.message);
+            }
+        }
+
+        // Inicializar
+        renderPouInterface();
+        
+        // Actualizar estadísticas automáticamente cada 2 segundos para que sea más visible
+        setInterval(updatePetStats, 2000);
+        
+        // Actualizar inmediatamente después de 1 segundo para ver el primer cambio
+        setTimeout(updatePetStats, 1000);
+        
+        // Actualizar cada segundo durante los primeros 10 segundos para mostrar cambios rápidos
+        let quickUpdates = 0;
+        const quickInterval = setInterval(() => {
+            updatePetStats();
+            quickUpdates++;
+            if (quickUpdates >= 10) {
+                clearInterval(quickInterval);
+            }
+        }, 1000);
+    </script>
+    <script>
+function animateSVGParts() {
+  // Héroe parpadeo
+  const heroEyes = document.getElementById('hero-eyes');
+  if (heroEyes) {
+    heroEyes.style.transformOrigin = '0px -20px';
+    heroEyes.style.animation = 'blink 3s infinite';
+    heroEyes.style.animationDelay = '0s';
+  }
+  // Héroe brazos
+  const heroArmLeftGroup = document.getElementById('hero-arm-left-group');
+  const heroArmRightGroup = document.getElementById('hero-arm-right-group');
+  if (heroArmLeftGroup) {
+    heroArmLeftGroup.style.transformOrigin = '-40px 40px';
+    heroArmLeftGroup.style.animation = 'arm-wave 2.5s infinite';
+  }
+  if (heroArmRightGroup) {
+    heroArmRightGroup.style.transformOrigin = '40px 40px';
+    heroArmRightGroup.style.animation = 'arm-wave-right 2.5s infinite';
+  }
+  // Mascota parpadeo
+  const dogEyes = document.getElementById('dog-eyes');
+  if (dogEyes) {
+    dogEyes.style.transformOrigin = '0px -15px';
+    dogEyes.style.animation = 'blink 2.7s infinite';
+    dogEyes.style.animationDelay = '0.2s';
+  }
+  // Mascota orejas
+  const dogEars = document.getElementById('dog-ears');
+  if (dogEars) {
+    dogEars.style.transformOrigin = '0px -25px';
+    dogEars.style.animation = 'ear-wiggle 2.2s infinite';
+  }
+}
+// Llama a la animación cada vez que se renderizan los personajes
+const observer = new MutationObserver(() => { setTimeout(animateSVGParts, 100); });
+observer.observe(document.getElementById('charactersContainer'), { childList: true });
+window.addEventListener('DOMContentLoaded', animateSVGParts);
+</script>
+</body>
+</html> 

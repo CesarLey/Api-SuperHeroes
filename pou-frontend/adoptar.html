@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adoptar - SuperPets</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Adoptar Mascota</h1>
+        <div id="adoptarSection"></div>
+        <button class="btn" onclick="window.location.href='menu.html'">Volver al menú</button>
+    </div>
+    
+    <script src="main.js"></script>
+    <script>
+        // Verificar autenticación
+        if (!getToken()) {
+            window.location.href = 'login.html';
+        }
+        
+        // Renderizar sección de adopción
+        renderAdoptarSection();
+    </script>
+</body>
+</html> 
