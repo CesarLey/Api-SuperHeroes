@@ -6,6 +6,11 @@ import swaggerUi from 'swagger-ui-express';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const options = {
   definition: {
@@ -44,7 +49,7 @@ const options = {
       },
     ],
   },
-  apis: ['./controllers/*.js', './routes/*.js'], // Agrega también las rutas
+  apis: ['./controllers/*.js', './routes/*.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
@@ -56,12 +61,22 @@ mongoose.connect('mongodb+srv://cesarley15:qWyMmxTAZJ1U7fPD@cluster0.asaxiov.mon
 const app = express()
 app.use(cors());
 app.use(express.json())
+
+// Servir archivos estáticos (frontend)
+app.use(express.static(path.join(__dirname, 'pou-frontend')));
+
+// Rutas para API y autenticación
 app.use('/auth', authRoutes);
-app.use('/api', heroController)
+app.use('/api', heroController);
 app.use('/api', petController);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Para rutas que no sean API o auth, servir el index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pou-frontend', 'index.html'));
+});
 
 const PORT = 3001
-app.listen(PORT, _ => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`)
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`)
 })
