@@ -1,7 +1,7 @@
 // main.js para SuperPets
 // Aquí irá la lógica global del juego
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'https://api-superheroes-8my1.onrender.com';
 const TOKEN_KEY = 'superpets_token';
 
 // Utilidad para obtener el token
