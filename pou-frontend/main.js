@@ -217,9 +217,13 @@ function setPetColors(petId, colors) {
 
 // Función para obtener el SVG según el tipo de mascota
 function getPetSVG(type) {
+  return getPetSVGWithSize(type, 300, 400);
+}
+
+function getPetSVGWithSize(type, width, height) {
   const svgTemplates = {
     perro: `
-      <svg id="petAvatar" width="300" height="400" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+      <svg id="petAvatar" width="${width}" height="${height}" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="dogGradient" cx="50%" cy="30%" r="70%">
             <stop offset="0%" style="stop-color:#F4A460"/>
@@ -294,7 +298,7 @@ function getPetSVG(type) {
       </svg>
     `,
     gato: `
-      <svg id="petAvatar" width="300" height="400" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+      <svg id="petAvatar" width="${width}" height="${height}" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="catGradient" cx="50%" cy="30%" r="70%">
             <stop offset="0%" style="stop-color:#B8B8B8"/>
@@ -669,7 +673,52 @@ function getHeroSVG(heroId) {
 // Función para adoptar una mascota
 async function adoptPet(heroId, petId) {
   try {
-    const response = await fetch(`${API_URL}/api/heroes/${heroId}/adopt-pet`, {
+    console.log('Intentando adoptar mascota:', { heroId, petId });
+    
+    const response = await fetch(`${API_URL}/api/heroes/${heroId}/adopt_pet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({ petId: parseInt(petId) })
+    });
+    
+    console.log('Respuesta del servidor:', { status: response.status, statusText: response.statusText });
+    
+    if (!response.ok) {
+      // Obtener el texto de la respuesta del servidor
+      const responseText = await response.text();
+      console.log('Respuesta completa del servidor:', responseText);
+      
+      // Buscar directamente el mensaje de error en el texto
+      if (responseText.includes('ya tiene una mascota adoptada')) {
+        // Extraer el mensaje del JSON manualmente
+        const match = responseText.match(/"error":"([^"]+)"/);
+        if (match) {
+          throw new Error(match[1]);
+        }
+      }
+      
+      // Si no encuentra el mensaje específico, intentar parsear como JSON
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      } catch (parseError) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error al adoptar mascota:', error);
+    throw error;
+  }
+}
+
+async function unadoptPet(heroId, petId) {
+  try {
+    const response = await fetch(`${API_URL}/api/heroes/${heroId}/unadopt_pet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -679,12 +728,30 @@ async function adoptPet(heroId, petId) {
     });
     
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      // Obtener el texto de la respuesta del servidor
+      const responseText = await response.text();
+      
+      try {
+        // Intentar parsear como JSON
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      } catch (parseError) {
+        // Si el texto contiene el mensaje específico, usarlo
+        if (responseText.includes('ya tiene una mascota adoptada')) {
+          // Extraer el mensaje del JSON manualmente
+          const match = responseText.match(/"error":"([^"]+)"/);
+          if (match) {
+            throw new Error(match[1]);
+          }
+        }
+        // Si no se puede parsear, usar el mensaje por defecto
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
     }
     
     return await response.json();
   } catch (error) {
-    console.error('Error al adoptar mascota:', error);
+    console.error('Error al desadoptar mascota:', error);
     throw error;
   }
 }
@@ -746,60 +813,41 @@ window.renderAdoptarSection = async function() {
       return;
     }
     
-    const hero = heroes[0]; // Usar el primer héroe
-    const availablePets = pets.filter(pet => !pet.adoptedBy); // Filtrar mascotas no adoptadas
-    
-    if (availablePets.length === 0) {
-      section.innerHTML = `
-        <div class="msg" style="color: #e57373; text-align: center; margin: 20px;">
-          Todas las mascotas ya han sido adoptadas.
-        </div>
-      `;
-      return;
-    }
-    
-    section.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3>Héroe: ${hero.name} (${hero.alias})</h3>
-        <p>Ciudad: ${hero.city}</p>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <h3>Mascotas disponibles para adoptar:</h3>
-        <div id="availablePetsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
-        </div>
-      </div>
-      
-      <div id="adoptMsg" class="msg"></div>
+    // Crear selector de héroe
+    const heroSelector = document.createElement('div');
+    heroSelector.style.marginBottom = '20px';
+    heroSelector.innerHTML = `
+      <label for="heroSelect" style="font-weight: bold; margin-right: 10px;">Seleccionar Héroe:</label>
+      <select id="heroSelect" onchange="onHeroSelectChange()" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+        ${heroes.map(hero => `<option value="${hero.id}">${hero.name} (${hero.alias}) - ${hero.city}</option>`).join('')}
+      </select>
     `;
+    section.appendChild(heroSelector);
     
-    const petsList = document.getElementById('availablePetsList');
-    availablePets.forEach(pet => {
-      const petCard = document.createElement('div');
-      petCard.className = 'pet-card';
-      petCard.style.cssText = `
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-        background: white;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      `;
-      
-      petCard.innerHTML = `
-        <div style="margin-bottom: 10px;">
-          ${getPetSVG(pet.type)}
-        </div>
-        <div style="margin-bottom: 10px;">
-          <strong>${pet.name}</strong> (${pet.type})
-        </div>
-        <button class="btn" onclick="adoptPetAction(${hero.id}, ${pet.id})" style="background: #4CAF50; color: white;">
-          🏠 Adoptar
-        </button>
-      `;
-      
-      petsList.appendChild(petCard);
-    });
+    // Mostrar información del héroe seleccionado
+    const heroInfo = document.createElement('div');
+    heroInfo.id = 'heroInfo';
+    heroInfo.style.marginBottom = '20px';
+    section.appendChild(heroInfo);
+    
+    // Mostrar mascotas disponibles
+    const availablePetsSection = document.createElement('div');
+    availablePetsSection.innerHTML = `
+      <h3>Mascotas disponibles para adoptar:</h3>
+      <div id="availablePetsList" style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; justify-content: flex-start; align-items: flex-start;"></div>
+    `;
+    section.appendChild(availablePetsSection);
+    
+
+    
+    // Mensaje de estado
+    const msgDiv = document.createElement('div');
+    msgDiv.id = 'adoptMsg';
+    msgDiv.className = 'msg';
+    section.appendChild(msgDiv);
+    
+    // Cargar datos del primer héroe por defecto
+    onHeroSelectChange();
     
   } catch (error) {
     section.innerHTML = `
@@ -810,9 +858,86 @@ window.renderAdoptarSection = async function() {
   }
 };
 
+// Función para manejar el cambio de héroe seleccionado
+window.onHeroSelectChange = async function() {
+  const heroSelect = document.getElementById('heroSelect');
+  const heroId = parseInt(heroSelect.value);
+  const hero = (await fetchHeroes()).find(h => h.id === heroId);
+  const pets = await fetchPets();
+  
+  // Actualizar información del héroe
+  const heroInfo = document.getElementById('heroInfo');
+  heroInfo.innerHTML = `
+    <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
+      <h3>🏠 Héroe: ${hero.name} (${hero.alias})</h3>
+      <p>🏙️ Ciudad: ${hero.city}</p>
+    </div>
+  `;
+  
+  // Filtrar solo mascotas disponibles
+  const availablePets = pets.filter(pet => !pet.adoptedBy);
+  
+  // Mostrar mascotas disponibles
+  const availablePetsList = document.getElementById('availablePetsList');
+  availablePetsList.innerHTML = '';
+  
+  if (availablePets.length === 0) {
+    availablePetsList.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; color: #666; padding: 20px;">
+        No hay mascotas disponibles para adoptar.
+      </div>
+    `;
+  } else {
+    availablePets.forEach(pet => {
+      const petCard = document.createElement('div');
+      petCard.className = 'pet-card';
+      petCard.style.cssText = `
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        min-width: 200px;
+        max-width: 250px;
+        flex: 0 1 auto;
+      `;
+      
+      petCard.innerHTML = `
+        <div style="margin-bottom: 15px; text-align: center;">
+          <div style="width: 80px; height: 100px; margin: 0 auto; overflow: hidden;">
+            ${getPetSVGWithSize(pet.type, 80, 100)}
+          </div>
+        </div>
+        <div style="margin-bottom: 5px;">
+          <strong>${pet.name} (${pet.type})</strong>
+        </div>
+        <div style="margin-bottom: 5px; font-size: 12px; color: #666;">
+          ID: ${pet.id}
+        </div>
+        <div style="margin-bottom: 10px; font-size: 12px; color: #666;">
+          Disponible para adoptar
+        </div>
+        <button class="btn" onclick="adoptPetAction(${heroId}, ${pet.id})" style="background: #4CAF50; color: white; padding: 8px 12px; font-size: 12px;">
+          🏠 Adoptar
+        </button>
+      `;
+      
+      availablePetsList.appendChild(petCard);
+    });
+  }
+};
+
 // Función para manejar la adopción
 window.adoptPetAction = async function(heroId, petId) {
   const msgDiv = document.getElementById('adoptMsg');
+  
+  // Verificar que el elemento existe
+  if (!msgDiv) {
+    console.error('No se encontró el elemento adoptMsg');
+    return;
+  }
+  
   msgDiv.textContent = '';
   
   try {
@@ -822,12 +947,216 @@ window.adoptPetAction = async function(heroId, petId) {
     
     // Recargar la sección después de un momento
     setTimeout(() => {
-      renderAdoptarSection();
+      onHeroSelectChange();
+    }, 1500);
+    
+  } catch (error) {
+    console.log('Error en adopción:', error.message); // Debug log
+    console.log('Error completo:', error); // Debug log completo
+    
+    msgDiv.style.color = '#e57373';
+    
+    // Verificar si es un error 400 (que indica que el héroe ya tiene una mascota)
+    if (error.message.includes('400') || error.message.includes('Bad Request')) {
+      // Mostrar el mensaje específico para este caso
+      msgDiv.innerHTML = `
+        <div style="text-align: left; padding: 15px; background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 8px; margin: 10px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="font-size: 18px; font-weight: bold; color: #856404; margin-bottom: 10px;">
+            ⚠️ El héroe ya tiene una mascota adoptada
+          </div>
+          <p style="margin: 8px 0; color: #856404;">Para adoptar esta mascota, tienes dos opciones:</p>
+          <ul style="margin: 8px 0; padding-left: 20px; color: #856404;">
+            <li><strong>Selecciona otro héroe</strong> del menú desplegable</li>
+            <li><strong>Ve a la pestaña "Ver Todas las Mascotas"</strong> para desadoptar la mascota actual del héroe</li>
+          </ul>
+        </div>
+      `;
+    } else {
+      msgDiv.innerHTML = `
+        <div style="text-align: left; padding: 10px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; color: #721c24;">
+          <strong>Error al adoptar:</strong> ${error.message}
+        </div>
+      `;
+    }
+  }
+};
+
+// Función para manejar la desadopción
+window.unadoptPetAction = async function(heroId, petId) {
+  const msgDiv = document.getElementById('adoptMsg');
+  msgDiv.textContent = '';
+  
+  try {
+    await unadoptPet(heroId, petId);
+    msgDiv.style.color = '#43cea2';
+    msgDiv.textContent = '¡Mascota desadoptada con éxito! 🏠';
+    
+    // Recargar la sección después de un momento
+    setTimeout(() => {
+      onHeroSelectChange();
     }, 1500);
     
   } catch (error) {
     msgDiv.style.color = '#e57373';
-    msgDiv.textContent = `Error al adoptar: ${error.message}`;
+    msgDiv.textContent = `Error al desadoptar: ${error.message}`;
+  }
+};
+
+// Función para desadoptar mascota desde la lista de todas las mascotas
+window.unadoptPetFromList = async function(heroId, petId) {
+  try {
+    await unadoptPet(heroId, petId);
+    // Mostrar mensaje temporal
+    const tempMsg = document.createElement('div');
+    tempMsg.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #43cea2;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      font-weight: bold;
+    `;
+    tempMsg.textContent = '¡Mascota desadoptada con éxito! 🏠';
+    document.body.appendChild(tempMsg);
+    
+    // Remover mensaje después de 2 segundos
+    setTimeout(() => {
+      if (tempMsg.parentNode) {
+        tempMsg.parentNode.removeChild(tempMsg);
+      }
+    }, 2000);
+    
+    // Refrescar la sección
+    setTimeout(() => {
+      renderTodasMascotasSection();
+    }, 500);
+  } catch (error) {
+    // Mostrar mensaje de error
+    const tempMsg = document.createElement('div');
+    tempMsg.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #f44336;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      font-weight: bold;
+      max-width: 300px;
+    `;
+    
+    // Mensaje personalizado para el error de héroe con mascota ya adoptada
+    if (error.message.includes('ya tiene una mascota adoptada')) {
+      tempMsg.innerHTML = `
+        <div style="text-align: left;">
+          <strong>⚠️ El héroe ya tiene una mascota adoptada</strong><br>
+          <small>Selecciona otro héroe o desadopta la mascota actual</small>
+        </div>
+      `;
+    } else {
+      tempMsg.textContent = `Error al desadoptar: ${error.message}`;
+    }
+    
+    document.body.appendChild(tempMsg);
+    
+    // Remover mensaje después de 4 segundos para dar tiempo a leer
+    setTimeout(() => {
+      if (tempMsg.parentNode) {
+        tempMsg.parentNode.removeChild(tempMsg);
+      }
+    }, 4000);
+  }
+};
+
+// Renderizar sección de todas las mascotas con información de adopción
+window.renderTodasMascotasSection = async function() {
+  const section = document.getElementById('todasSection');
+  section.innerHTML = '';
+  
+  try {
+    const heroes = await fetchHeroes();
+    const pets = await fetchPets();
+    
+    // Filtrar solo mascotas adoptadas
+    const adoptedPets = pets.filter(pet => pet.adoptedBy);
+    
+    if (adoptedPets.length === 0) {
+      section.innerHTML = `
+        <div class="msg" style="color: #e57373; text-align: center; margin: 20px;">
+          No hay mascotas adoptadas. Ve a la pestaña "Adoptar" para adoptar mascotas.
+        </div>
+      `;
+      return;
+    }
+    
+    // Crear lista de mascotas con información de adopción
+    const petsList = document.createElement('div');
+    petsList.style.cssText = `
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 15px;
+      justify-content: flex-start;
+      align-items: flex-start;
+    `;
+    
+    adoptedPets.forEach(pet => {
+      const petCard = document.createElement('div');
+      petCard.className = 'pet-card';
+      
+      const adoptedHero = heroes.find(h => h.id === pet.adoptedBy);
+      petCard.style.cssText = `
+        border: 2px solid #4CAF50;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        background: #f1f8e9;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        min-width: 200px;
+        max-width: 250px;
+        flex: 0 1 auto;
+      `;
+      
+      petCard.innerHTML = `
+        <div style="margin-bottom: 15px; text-align: center;">
+          <div style="width: 80px; height: 100px; margin: 0 auto; overflow: hidden;">
+            ${getPetSVGWithSize(pet.type, 80, 100)}
+          </div>
+        </div>
+        <div style="margin-bottom: 5px;">
+          <strong>${pet.name} (${pet.type})</strong>
+        </div>
+        <div style="margin-bottom: 5px; font-size: 12px; color: #666;">
+          ID: ${pet.id}
+        </div>
+        <div style="margin-bottom: 5px; font-size: 12px; color: #4CAF50; font-weight: bold;">
+          ✅ Adoptada por: ${adoptedHero ? adoptedHero.name : 'Héroe desconocido'}
+        </div>
+        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+          Héroe: ${adoptedHero ? `${adoptedHero.alias} (${adoptedHero.city})` : 'N/A'}
+        </div>
+        <button class="btn" onclick="unadoptPetFromList(${pet.adoptedBy}, ${pet.id})" style="background: #f44336; color: white; padding: 8px 12px; font-size: 12px;">
+          🚫 Desadoptar
+        </button>
+      `;
+      
+      petsList.appendChild(petCard);
+    });
+    
+    section.appendChild(petsList);
+    
+  } catch (error) {
+    section.innerHTML = `
+      <div class="msg" style="color: #e57373; text-align: center; margin: 20px;">
+        Error al cargar mascotas: ${error.message}
+      </div>
+    `;
   }
 };
 

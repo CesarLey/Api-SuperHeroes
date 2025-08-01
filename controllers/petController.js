@@ -344,7 +344,7 @@ router.post('/pets/:id/pasear', async (req, res) => {
  *       401:
  *         description: No autorizado
  */
-router.post('/pets/:id/equipar-ropa', async (req, res) => {
+router.post('/pets/:id/equipar_ropa', async (req, res) => {
     try {
         const pet = await petService.equiparRopaPet(req.params.id, req.body, req.user.userId);
         res.json(pet);
@@ -408,7 +408,7 @@ router.post('/pets/:id/curar', async (req, res) => {
  *       401:
  *         description: No autorizado
  */
-router.post('/pets/:id/pocion-salud', async (req, res) => {
+router.post('/pets/:id/pocion_salud', async (req, res) => {
     try {
         const pet = await petService.usarPocionSaludPet(req.params.id, req.user.userId);
         res.json(pet);

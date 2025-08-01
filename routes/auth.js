@@ -1,42 +1,12 @@
+// routes/auth.js
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 const router = express.Router();
-
-// Cambia esta clave por una más segura en producción
 const JWT_SECRET = 'superheroes_secret_key';
 
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Registrar un nuevo usuario
- *     tags:
- *       - Autenticación
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: usuario123
- *               password:
- *                 type: string
- *                 example: claveSegura
- *     responses:
- *       201:
- *         description: Usuario registrado correctamente
- *       400:
- *         description: Usuario y contraseña son requeridos
- *       409:
- *         description: El usuario ya existe
- */
-// Registro de usuario
 router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -56,43 +26,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Iniciar sesión
- *     tags:
- *       - Autenticación
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: usuario123
- *               password:
- *                 type: string
- *                 example: claveSegura
- *     responses:
- *       200:
- *         description: Login exitoso, retorna el token JWT
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       400:
- *         description: Usuario y contraseña son requeridos
- *       401:
- *         description: Usuario o contraseña incorrectos
- */
-// Login de usuario
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -114,4 +47,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

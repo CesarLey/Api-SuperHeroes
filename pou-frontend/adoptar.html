@@ -7,9 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container adopt-container">
         <h1>🏠 Adoptar Mascota</h1>
-        <div id="adoptarSection"></div>
+        
+        <!-- Pestañas -->
+        <div class="adopt-tabs">
+            <button class="adopt-tab active" onclick="switchAdoptTab('adoptar')">Adoptar</button>
+            <button class="adopt-tab" onclick="switchAdoptTab('todas')">Ver Todas las Mascotas</button>
+        </div>
+        
+        <!-- Contenido de las pestañas -->
+        <div id="adoptarSection" class="adopt-section active"></div>
+        <div id="todasSection" class="adopt-section"></div>
+        
         <button class="btn" onclick="window.location.href='menu.html'">Volver al menú</button>
     </div>
     
@@ -20,7 +30,33 @@
             window.location.href = 'login.html';
         }
         
-        // Renderizar sección de adopción
+        // Función para cambiar pestañas
+        window.switchAdoptTab = function(tabName) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.adopt-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Desactivar todas las pestañas
+            document.querySelectorAll('.adopt-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            document.getElementById(tabName + 'Section').classList.add('active');
+            
+            // Activar la pestaña seleccionada
+            event.target.classList.add('active');
+            
+            // Renderizar contenido según la pestaña
+            if (tabName === 'adoptar') {
+                renderAdoptarSection();
+            } else if (tabName === 'todas') {
+                renderTodasMascotasSection();
+            }
+        };
+        
+        // Renderizar sección de adopción por defecto
         renderAdoptarSection();
     </script>
 </body>

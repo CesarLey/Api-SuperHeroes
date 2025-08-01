@@ -92,6 +92,13 @@ async function adoptPet(petId, heroId, userId) {
     const pet = await Pet.findOne({ id: parseInt(petId), userId: userId });
     if (!pet) throw new Error('Mascota no encontrada');
     if (pet.adoptedBy) throw new Error('La mascota ya fue adoptada');
+    
+    // Verificar que el héroe no tenga ya una mascota adoptada
+    const existingAdoptedPet = await Pet.findOne({ adoptedBy: heroId, userId: userId });
+    if (existingAdoptedPet) {
+        throw new Error(`El héroe ya tiene una mascota adoptada (${existingAdoptedPet.name}). Debe desadoptarla primero para adoptar otra.`);
+    }
+    
     pet.adoptedBy = heroId;
     pet.ultimoEstado = new Date().toISOString();
     await pet.save();

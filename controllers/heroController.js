@@ -10,6 +10,8 @@ const router = express.Router();
 // Aplicar middleware de autenticación a todas las rutas
 router.use(authMiddleware);
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/with-pet:
@@ -24,7 +26,7 @@ router.use(authMiddleware);
  *       401:
  *         description: Token de acceso requerido
  */
-router.get('/heroes/with-pet', async (req, res) => {
+router.get('/heroes/with_pet', async (req, res) => {
     try {
         const result = await heroService.getHeroesWithAdoptedPets(req.user.userId);
         res.json(result);
@@ -33,6 +35,8 @@ router.get('/heroes/with-pet', async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes:
@@ -56,6 +60,8 @@ router.get("/heroes", async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}:
@@ -91,6 +97,8 @@ router.get("/heroes/:id", async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes:
@@ -144,6 +152,8 @@ router.post("/heroes",
         }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}:
@@ -191,6 +201,8 @@ router.put("/heroes/:id", async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}:
@@ -223,6 +235,8 @@ router.delete('/heroes/:id', async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/city/{city}:
@@ -253,6 +267,8 @@ router.get('/heroes/city/:city', async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}/enfrentar:
@@ -294,6 +310,8 @@ router.post('/heroes/:id/enfrentar', async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}/adopt-pet:
@@ -326,7 +344,7 @@ router.post('/heroes/:id/enfrentar', async (req, res) => {
  *       401:
  *         description: Token de acceso requerido
  */
-router.post('/heroes/:id/adopt-pet', async (req, res) => {
+router.post('/heroes/:id/adopt_pet', async (req, res) => {
     const heroId = parseInt(req.params.id);
     const { petId } = req.body;
     if (!petId) {
@@ -340,6 +358,8 @@ router.post('/heroes/:id/adopt-pet', async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}/unadopt-pet:
@@ -370,7 +390,7 @@ router.post('/heroes/:id/adopt-pet', async (req, res) => {
  *       400:
  *         description: Error de validación o la mascota no pertenece a ese superhéroe
  */
-router.post('/heroes/:id/unadopt-pet', async (req, res) => {
+router.post('/heroes/:id/unadopt_pet', async (req, res) => {
     const heroId = parseInt(req.params.id);
     const { petId } = req.body;
     if (!petId) {
@@ -393,6 +413,8 @@ router.post('/heroes/:id/unadopt-pet', async (req, res) => {
     }
 });
 
+// Comentando temporalmente la documentación Swagger
+/*
 /**
  * @swagger
  * /heroes/{id}/mascotas-adoptadas:
@@ -414,7 +436,7 @@ router.post('/heroes/:id/unadopt-pet', async (req, res) => {
  *       404:
  *         description: Superhéroe no encontrado
  */
-router.get('/heroes/:id/mascotas-adoptadas', async (req, res) => {
+router.get('/heroes/:id/mascotas_adoptadas', async (req, res) => {
     const heroId = parseInt(req.params.id);
     try {
         // Traer héroes del usuario y buscar el héroe
@@ -440,4 +462,4 @@ router.get('/heroes/:id/mascotas-adoptadas', async (req, res) => {
     }
 });
 
-export default router 
+export default router; 
