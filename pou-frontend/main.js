@@ -1,7 +1,7 @@
 // main.js para SuperPets
 // Aquí irá la lógica global del juego
 
-const API_URL = 'https://api-superheroes-8my1.onrender.com';
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://api-superheroes-8my1.onrender.com';
 const TOKEN_KEY = 'superpets_token';
 
 // Utilidad para obtener el token
@@ -705,7 +705,7 @@ async function adoptPet(heroId, petId) {
         const errorData = JSON.parse(responseText);
         throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
       } catch (parseError) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
     }
     
@@ -850,11 +850,11 @@ window.renderAdoptarSection = async function() {
     onHeroSelectChange();
     
   } catch (error) {
-    section.innerHTML = `
-      <div class="msg" style="color: #e57373; text-align: center; margin: 20px;">
+      section.innerHTML = `
+        <div class="msg" style="color: #e57373; text-align: center; margin: 20px;">
         Error al cargar datos: ${error.message}
-      </div>
-    `;
+        </div>
+      `;
   }
 };
 
@@ -871,7 +871,7 @@ window.onHeroSelectChange = async function() {
     <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
       <h3>🏠 Héroe: ${hero.name} (${hero.alias})</h3>
       <p>🏙️ Ciudad: ${hero.city}</p>
-    </div>
+        </div>
   `;
   
   // Filtrar solo mascotas disponibles
@@ -907,7 +907,7 @@ window.onHeroSelectChange = async function() {
         <div style="margin-bottom: 15px; text-align: center;">
           <div style="width: 80px; height: 100px; margin: 0 auto; overflow: hidden;">
             ${getPetSVGWithSize(pet.type, 80, 100)}
-          </div>
+        </div>
         </div>
         <div style="margin-bottom: 5px;">
           <strong>${pet.name} (${pet.type})</strong>
